@@ -4,7 +4,7 @@ import { json } from 'body-parser';
 import { swaggerSpec } from './swagger';
 
 const app = express();
-const PORT = 8080;
+const PORT = 8090;
 
 app.use(json());
 
@@ -25,7 +25,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *               type: string
  *               example: Hello, World!
  */
-app.get('/', (req, res) => {
+app.get('/', (req: express.Request, res: express.Response) => {
     res.send('Hello, World!');
 });
 
@@ -33,6 +33,3 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
 });
-
-// Ensure to install dependencies using npm:
-// Run: npm install express @types/express ts-node typescript swagger-ui-express

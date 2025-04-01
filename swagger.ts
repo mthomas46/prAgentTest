@@ -1,7 +1,7 @@
-import { SwaggerOptions } from 'swagger-ui-express';
-import swaggerJSDoc from 'swagger-jsdoc';
+import * as swaggerJSDoc from 'swagger-jsdoc'; // Ensure this is a namespace import
+import { Options } from 'swagger-jsdoc';
 
-const options: SwaggerOptions = {
+const options: Options = {
     definition: {
         openapi: '3.0.0',
         info: {
@@ -16,7 +16,7 @@ const options: SwaggerOptions = {
             },
         ],
     },
-    apis: ['index.ts'],
+    apis: ['./index.ts'], // Ensure correct path
 };
 
-export const swaggerSpec = swaggerJSDoc(options);
+export const swaggerSpec = swaggerJSDoc.default(options);
