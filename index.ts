@@ -1,11 +1,16 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
+import cors from 'cors';
+
 import { json } from 'body-parser';
 import { swaggerSpec } from './swagger';
 
 const app = express();
 const PORT = 8090;
 
+// Enable CORS for local testing
+app.use(cors())
+// Middleware
 app.use(json());
 
 // Swagger documentation
