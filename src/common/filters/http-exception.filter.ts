@@ -6,39 +6,42 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { QueryFailedError } from 'typeorm';
 
-@Catch()
+@Catch(HttpException, QueryFailedError)
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: HttpException | QueryFailedError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest();
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const request = ctx.getRequest<Request>();
 
-    const message =
-      exception instanceof HttpException
-        ? exception.message
-        : 'Internal server error';
+    if (exception instanceof QueryFailedError) {
+      const status = HttpStatus.BAD_REQUEST;
+      const message = exception.message;
 
-    const errorResponse = {
-      statusCode: status,
-      message,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-    };
+      response.status(status).json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: message,
+      });
+    } else {
+      const status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+      const message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any).message;
 
-    this.logger.error(
-      `${request.method} ${request.url}`,
-      JSON.stringify(errorResponse),
-      'ExceptionFilter',
-    );
-
-    response.status(status).json(errorResponse);
+      response.status(status).json({
+        statusCode: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: message,
+      });
+    }
   }
-} 
+}

@@ -155,9 +155,9 @@ describe('TaskService', () => {
     it('should throw NotFoundException when updating non-existent task', async () => {
       mockRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.update('1', { title: 'Updated Title' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('1', { title: 'Updated Title' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -186,9 +186,7 @@ describe('TaskService', () => {
       };
       const restoredTask = { ...deletedTask, deletedAt: null };
 
-      mockRepository.findOne
-        .mockResolvedValueOnce(deletedTask)
-        .mockResolvedValueOnce(restoredTask);
+      mockRepository.findOne.mockResolvedValueOnce(deletedTask).mockResolvedValueOnce(restoredTask);
 
       const result = await service.restore('1');
       expect(result).toEqual(restoredTask);
@@ -201,4 +199,4 @@ describe('TaskService', () => {
       await expect(service.restore('1')).rejects.toThrow(NotFoundException);
     });
   });
-}); 
+});

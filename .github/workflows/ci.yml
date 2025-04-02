@@ -43,10 +43,20 @@ jobs:
     - name: Run type checking
       run: npm run type-check
 
-    - name: Run tests
-      run: npm test
+    - name: Run unit tests
+      run: npm run test:unit
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/api_test
+
+    - name: Run integration tests
+      run: npm run test:docker
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/api_test
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        DB_DATABASE: api_test
 
   build:
     needs: test

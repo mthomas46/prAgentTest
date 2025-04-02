@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType, BadRequestException } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
@@ -10,6 +10,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TaskPriority } from './entities/task.entity';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,9 +39,21 @@ async function bootstrap() {
   // Global pipes
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       transform: true,
+      whitelist: true,
       forbidNonWhitelisted: true,
+      exceptionFactory: errors => {
+        const messages = errors.map(error => {
+          if (error.property === 'priority') {
+            return `Invalid priority value. Valid values are: ${Object.values(TaskPriority).join(', ')}`;
+          }
+          if (error.property === 'dueDate') {
+            return 'Invalid date format. Please use ISO 8601 format (e.g., 2024-04-02T10:00:00Z)';
+          }
+          return Object.values(error.constraints || {}).join(', ');
+        });
+        return new BadRequestException(messages);
+      },
     }),
   );
 
@@ -57,32 +70,24 @@ async function bootstrap() {
   // API versioning
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
   });
 
-  // Swagger configuration
+  // Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('PR Agent Test API')
-    .setDescription('The PR Agent Test API description')
+    .setTitle('Task Management API')
+    .setDescription('API for managing tasks')
     .setVersion('1.0')
-    .addBearerAuth()
     .addTag('tasks')
-    .addTag('health')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
-    swaggerOptions: {
-      tagsSorter: 'alpha',
-      operationsSorter: 'alpha',
-    },
-  });
+  SwaggerModule.setup('api', app, document);
 
   // Start the application
-  const port = appConfig.port;
+  const port = appConfig.port || 3000;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
   console.log(`Swagger documentation is available at: http://localhost:${port}/api`);
 }
 
-bootstrap(); 
+bootstrap();

@@ -38,7 +38,7 @@ describe('TaskController (e2e)', () => {
           priority: 'medium',
         })
         .expect(201)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body).toHaveProperty('id');
           expect(res.body.title).toBe('Test Task');
           expect(res.body.description).toBe('Test Description');
@@ -60,7 +60,7 @@ describe('TaskController (e2e)', () => {
       return request(app.getHttpServer())
         .get('/tasks')
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(Array.isArray(res.body)).toBe(true);
           expect(res.body.length).toBe(1);
           expect(res.body[0]).toHaveProperty('id');
@@ -81,7 +81,7 @@ describe('TaskController (e2e)', () => {
       return request(app.getHttpServer())
         .get(`/tasks/${task.id}`)
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body.id).toBe(task.id);
           expect(res.body.title).toBe('Test Task');
           expect(res.body.description).toBe('Test Description');
@@ -106,7 +106,7 @@ describe('TaskController (e2e)', () => {
           priority: 'high',
         })
         .expect(200)
-        .expect((res) => {
+        .expect(res => {
           expect(res.body.id).toBe(task.id);
           expect(res.body.title).toBe('Updated Task');
           expect(res.body.description).toBe('Updated Description');
@@ -122,9 +122,7 @@ describe('TaskController (e2e)', () => {
         priority: 'medium',
       });
 
-      await request(app.getHttpServer())
-        .delete(`/tasks/${task.id}`)
-        .expect(200);
+      await request(app.getHttpServer()).delete(`/tasks/${task.id}`).expect(200);
 
       const deletedTask = await taskRepository.findOne({
         where: { id: task.id },
@@ -136,4 +134,4 @@ describe('TaskController (e2e)', () => {
       }
     });
   });
-}); 
+});

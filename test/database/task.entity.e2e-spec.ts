@@ -233,10 +233,7 @@ describe('Task Entity Database Tests', () => {
         { title: 'Task 2', completed: false },
       ]);
 
-      await taskRepository.update(
-        { completed: false },
-        { completed: true }
-      );
+      await taskRepository.update({ completed: false }, { completed: true });
 
       const tasks = await taskRepository.find();
       expect(tasks.every(task => task.completed)).toBe(true);
@@ -282,10 +279,7 @@ describe('Task Entity Database Tests', () => {
     });
 
     it('should soft delete multiple tasks', async () => {
-      const tasks = await taskRepository.save([
-        { title: 'Task 1' },
-        { title: 'Task 2' },
-      ]);
+      const tasks = await taskRepository.save([{ title: 'Task 1' }, { title: 'Task 2' }]);
 
       await taskRepository.softDelete(tasks.map(task => task.id));
 
@@ -336,7 +330,7 @@ describe('Task Entity Database Tests', () => {
       });
 
       await expect(Promise.all([update1, update2])).resolves.toBeDefined();
-      
+
       const finalTask = await taskRepository.findOne({
         where: { id: task.id },
       });
@@ -344,4 +338,4 @@ describe('Task Entity Database Tests', () => {
       expect(['Update 1', 'Update 2']).toContain(finalTask?.description);
     });
   });
-}); 
+});

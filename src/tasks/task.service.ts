@@ -53,4 +53,4 @@ export class TaskService {
     await this.taskRepository.restore(id);
     return this.findOne(id);
   }
-} 
+}

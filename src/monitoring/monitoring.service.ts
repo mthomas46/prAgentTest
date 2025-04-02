@@ -49,4 +49,4 @@ export class MonitoringService {
     this.httpRequestDuration.observe({ method, route, status_code: statusCode }, duration);
     this.httpRequestTotal.inc({ method, route, status_code: statusCode });
   }
-} 
+}

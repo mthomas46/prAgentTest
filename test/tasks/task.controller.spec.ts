@@ -50,9 +50,7 @@ describe('TaskController', () => {
     });
 
     it('should include deleted tasks when specified', async () => {
-      const deletedTasks = [
-        { id: '1', title: 'Task 1', deletedAt: new Date() },
-      ];
+      const deletedTasks = [{ id: '1', title: 'Task 1', deletedAt: new Date() }];
       mockTaskService.findAll.mockResolvedValue(deletedTasks);
 
       const result = await controller.findAll(true);
@@ -74,9 +72,7 @@ describe('TaskController', () => {
     it('should throw NotFoundException when task is not found', async () => {
       mockTaskService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('1', false)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(controller.findOne('1', false)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -115,9 +111,9 @@ describe('TaskController', () => {
     it('should throw NotFoundException when updating non-existent task', async () => {
       mockTaskService.update.mockRejectedValue(new NotFoundException());
 
-      await expect(
-        controller.update('1', { title: 'Updated Title' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(controller.update('1', { title: 'Updated Title' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -158,4 +154,4 @@ describe('TaskController', () => {
       await expect(controller.restore('1')).rejects.toThrow(NotFoundException);
     });
   });
-}); 
+});

@@ -1,21 +1,22 @@
 # Compiled output
-/dist
-/node_modules
+dist/
+build/
+*.js
+!jest.config.js
 
 # Dependencies
+node_modules/
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
 
 # TypeScript
 *.tsbuildinfo
 
 # Environment variables
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
 
 # IDE
 .idea/
@@ -25,12 +26,11 @@ lerna-debug.log*
 .DS_Store
 
 # Logs
-logs
+logs/
 *.log
 
 # Coverage
-/coverage
-/.nyc_output
+coverage/
 
 # Temporary files
 tmp/
@@ -80,9 +80,4 @@ temp/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
-!.vscode/extensions.json
-!.history/*
-
-# Build
-/build
-/dist 
+!.vscode/extensions.json 

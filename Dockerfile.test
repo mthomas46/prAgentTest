@@ -2,40 +2,35 @@ FROM node:18
 
 WORKDIR /app
 
-# Install required packages
+# Install Java for Liquibase
 RUN apt-get update && \
     apt-get install -y default-jre postgresql-client wget && \
-    wget https://github.com/liquibase/liquibase/releases/download/v4.4.0/liquibase-4.4.0.tar.gz && \
+    wget https://github.com/liquibase/liquibase/releases/download/v4.25.1/liquibase-4.25.1.tar.gz && \
     mkdir -p /opt/liquibase && \
-    tar -xzf liquibase-4.4.0.tar.gz -C /opt/liquibase && \
-    mkdir -p /opt/liquibase/lib && \
-    wget https://jdbc.postgresql.org/download/postgresql-42.7.2.jar -O /opt/liquibase/lib/postgresql.jar && \
-    chmod +x /opt/liquibase/liquibase && \
+    tar -xzf liquibase-4.25.1.tar.gz -C /opt/liquibase && \
     ln -s /opt/liquibase/liquibase /usr/local/bin/liquibase && \
-    rm liquibase-4.4.0.tar.gz && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Verify Liquibase installation
-RUN liquibase --version
-
-# Copy package files
-COPY package*.json ./
+    rm liquibase-4.25.1.tar.gz
 
 # Install dependencies
+COPY package*.json ./
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build application
+# Build the application
 RUN npm run build
 
-# Copy Liquibase configuration
+# Copy Liquibase properties
 COPY liquibase.properties /app/liquibase.properties
 
-# Expose port
-EXPOSE 3000
+# Set environment variables
+ENV NODE_ENV=test
+ENV DB_HOST=db-test
+ENV DB_PORT=5432
+ENV DB_USERNAME=postgres
+ENV DB_PASSWORD=postgres
+ENV DB_DATABASE=test
 
-# Start application
+# Run tests
 CMD ["npm", "run", "test"] 

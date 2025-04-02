@@ -49,10 +49,7 @@ export class TaskController {
   @ApiOperation({ summary: 'Update a task' })
   @ApiResponse({ status: 200, description: 'The task has been updated', type: Task })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async update(
-    @Param('id') id: string,
-    @Body() taskData: Partial<Task>,
-  ): Promise<Task> {
+  async update(@Param('id') id: string, @Body() taskData: Partial<Task>): Promise<Task> {
     return this.taskService.update(id, taskData);
   }
 
@@ -72,4 +69,4 @@ export class TaskController {
   async restore(@Param('id') id: string): Promise<Task> {
     return this.taskService.restore(id);
   }
-} 
+}

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { HealthCheckService, HttpHealthIndicator } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class HealthService {
@@ -11,7 +10,6 @@ export class HealthService {
     private http: HttpHealthIndicator,
     @InjectConnection()
     private readonly connection: Connection,
-    private configService: ConfigService
   ) {}
 
   async check() {
@@ -60,9 +58,7 @@ export class HealthService {
       },
     ]);
 
-    const isHealthy = Object.values(healthCheck).every(
-      (check) => check.status === 'up',
-    );
+    const isHealthy = Object.values(healthCheck).every(check => check.status === 'up');
 
     return {
       status: isHealthy ? 'ok' : 'error',
@@ -70,16 +66,4 @@ export class HealthService {
       details: healthCheck,
     };
   }
-
-  getEnvironment(): string {
-    return this.configService.get('app.nodeEnv');
-  }
-
-  getDatabaseConfig() {
-    return {
-      host: this.configService.get('database.host'),
-      port: this.configService.get('database.port'),
-      database: this.configService.get('database.database'),
-    };
-  }
-} 
+}

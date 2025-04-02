@@ -13,4 +13,4 @@ export const AppDataSource = new DataSource({
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
   dropSchema: true, // This will drop all tables before each test run
-}); 
+});

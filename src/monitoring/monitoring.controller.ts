@@ -20,4 +20,4 @@ export class MonitoringController {
   getStatus() {
     return this.monitoringService.getStatus();
   }
-} 
+}
