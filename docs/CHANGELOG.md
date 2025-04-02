@@ -195,4 +195,88 @@ npm test
 
 # Build the application
 npm run build
+```
+
+## [1.1.1] - 2024-04-02
+
+### Added
+- Comprehensive logger service tests
+- Database viewer using Dockerized Adminer
+- Detailed testing documentation for logger service
+- Node.js version requirements documentation
+- Test coverage statistics
+- Performance metrics tracking
+
+### Changed
+- Updated Node.js version requirement to >=18.0.0
+- Improved test configuration for better compatibility
+- Enhanced logging system with context support
+- Updated test documentation structure
+- Enhanced dialogue log with detailed metrics
+- Improved commit history organization
+
+### Fixed
+- Node.js version compatibility issues
+- ts-jest configuration problems
+- Test execution environment setup
+- Dependency installation issues
+- Documentation consistency
+- Test coverage reporting
+
+### Technical Debt
+- Need to implement log rotation policies
+- Consider adding structured logging
+- Add environment-specific log level configuration
+- Monitor logger performance in production
+- Enhance database viewer features
+- Add more test cases
+- Improve documentation coverage
+- Set up continuous integration
+- Add performance monitoring
+- Implement security scanning
+
+### Documentation
+- Added comprehensive logger service documentation
+- Updated Node.js version requirements
+- Added installation and setup instructions
+- Enhanced test execution guidelines
+- Added performance metrics
+- Updated commit history
+- Enhanced dialogue log
+- Added statistics tracking
+
+### Development Workflow
+1. Node.js version update
+2. Logger service test implementation
+3. Documentation updates
+4. Performance metrics tracking
+5. Future improvements planning
+
+### Current Project Structure
+```
+.
+├── docs/
+│   ├── CHANGELOG.md
+│   ├── COMMIT_HISTORY.md
+│   ├── DIALOGUE_LOG.md
+│   ├── STATISTICS.md
+│   └── TESTING.md
+├── test/
+│   └── logger.service.spec.ts
+└── package.json
+```
+
+### Available Commands
+```bash
+# Run logger service tests
+NODE_ENV=test npm test -- test/logger.service.spec.ts
+
+# Start database viewer
+docker-compose up adminer
+
+# Check Node.js version
+node -v
+
+# Clean and reinstall dependencies
+rm -rf node_modules package-lock.json && npm install
 ``` 
