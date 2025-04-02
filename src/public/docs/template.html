@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} Documentation</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/highlight.css">
+    <style>
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+        }
+        .content h2 {
+            font-size: 2rem;
+            margin: 2rem 0 1rem;
+            color: var(--text-color);
+        }
+        .content h3 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--text-color);
+        }
+        .content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .content ul, .content ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        .content li {
+            margin-bottom: 0.5rem;
+        }
+        .content code {
+            background-color: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        }
+        .content pre {
+            background-color: #1f2937;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #e5e7eb;
+        }
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .content th, .content td {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+        .content th {
+            background-color: var(--sidebar-bg);
+            font-weight: 600;
+        }
+        .content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #4b5563;
+        }
+        .nav-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        .nav-link:hover {
+            background-color: var(--hover-color);
+        }
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>Documentation</h2>
+            <ul>
+                <li><a href="/docs/docs.md" class="nav-link">Overview</a></li>
+                <li><a href="/docs/api.md" class="nav-link">API Reference</a></li>
+                <li><a href="/docs/health.md" class="nav-link">Health Check</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            {{content}}
+        </main>
+    </div>
+</body>
+</html> 

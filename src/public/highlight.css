@@ -1,0 +1,75 @@
+/* highlight.js GitHub Dark theme */
+.hljs {
+    color: #c9d1d9;
+    background: #0d1117;
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-literal {
+    color: #ff7b72;
+}
+
+.hljs-title,
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-addition {
+    color: #7ee787;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-attr .hljs-built_in,
+.hljs-literal,
+.hljs-number,
+.hljs-variable,
+.hljs-variable .hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-class,
+.hljs-class .hljs-title .hljs-keyword {
+    color: #79c0ff;
+}
+
+.hljs-string,
+.hljs-meta .hljs-string,
+.hljs-char,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition,
+.hljs-variable,
+.hljs-template-tag,
+.hljs-template-variable {
+    color: #7ee787;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion {
+    color: #8b949e;
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-built_in,
+.hljs-name,
+.hljs-tag {
+    color: #ff7b72;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: 700;
+}
+
+.hljs-link {
+    text-decoration: underline;
+} 
