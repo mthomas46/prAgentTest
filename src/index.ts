@@ -17,7 +17,19 @@ import type {
 } from './utils/docs.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import helmet from 'helmet';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import { dirname, join } from 'path';
+import { marked } from 'marked';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import swaggerJsdoc from 'swagger-jsdoc';
+import { errorHandler } from './middleware/errorHandler.js';
+import { logger } from './utils/logger.js';
+import { healthRouter } from './routes/health.js';
+import { docsRouter } from './routes/docs.js';
+import { apiRouter } from './routes/api.js';
+import { securityHeaders } from './middleware/securityHeaders.js';
 
 /**
  * Express application instance
@@ -30,50 +42,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'"],
-            fontSrc: ["'self'"],
-            objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
-        },
-    },
-}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: config.CORS_ORIGINS,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(securityHeaders);
+app.use(compression());
 
-/**
- * Security headers middleware
- * Adds essential security headers to all responses
- * @type {express.RequestHandler}
- */
-app.use((_: Request, res: Response, next: NextFunction) => {
-  const headers: SecurityHeaders = {
-    'x-content-type-options': 'nosniff',
-    'x-frame-options': 'DENY',
-    'x-xss-protection': '1; mode=block'
-  };
-  
-  Object.entries(headers).forEach(([key, value]) => {
-    res.setHeader(key, value);
-  });
-  
-  next();
-});
-
-// Serve static files
-app.use(express.static(path.join(process.cwd(), 'src', 'public')));
-app.use(express.static(process.cwd()));
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 /**
  * @swagger
@@ -154,15 +134,25 @@ app.get('/api/health', (_: Request, res: Response) => {
  */
 app.get('/docs/:file', (req: Request, res: Response) => {
     const file = req.params.file;
-    const allowedFiles = ['README.md', 'CHANGELOG.md', 'dialogue.md'];
+    const allowedFiles = ['README.md', 'CHANGELOG.md', 'dialogue.md', 'docs.html'];
     
     if (!allowedFiles.includes(file)) {
         return res.status(404).json({ error: 'Documentation file not found' });
     }
     
-    // Set the content type to text/plain for markdown files
-    res.setHeader('Content-Type', 'text/plain');
-    res.sendFile(path.join(process.cwd(), file));
+    if (file.endsWith('.md')) {
+        // Set the content type to text/plain for markdown files
+        res.setHeader('Content-Type', 'text/plain');
+        res.sendFile(path.join(process.cwd(), file));
+    } else {
+        // For HTML files, serve from the public directory
+        res.sendFile(path.join(__dirname, 'public', file));
+    }
+});
+
+// Add a direct route for docs.html
+app.get('/docs.html', (_: Request, res: Response) => {
+    res.sendFile(path.join(__dirname, 'public', 'docs.html'));
 });
 
 /**
