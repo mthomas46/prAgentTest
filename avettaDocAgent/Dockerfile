@@ -11,8 +11,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with verbose output
+RUN npm run build --verbose
+
+# List contents of dist directory
+RUN ls -la dist/
 
 # Expose port
 EXPOSE 3000
