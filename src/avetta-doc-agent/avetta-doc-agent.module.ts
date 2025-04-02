@@ -7,6 +7,7 @@ import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
+import { LoggerService } from '../common/services/logger.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { DocumentService } from './document.service';
     MetricsService,
     WebhookService,
     DocumentService,
+    LoggerService,
   ],
   exports: [MetricsService],
 })

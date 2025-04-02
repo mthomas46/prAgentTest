@@ -1,15 +1,15 @@
-import { Controller, Get, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import { DocumentData } from './interfaces/webhook-event.interface';
 import { MetricsService } from './metrics.service';
+import { LoggerService } from '../common/services/logger.service';
 
 @Controller('documents')
 export class DocumentController {
-  private readonly logger = new Logger(DocumentController.name);
-
   constructor(
     private readonly documentService: DocumentService,
     private readonly metricsService: MetricsService,
+    private readonly logger: LoggerService,
   ) {}
 
   @Get()

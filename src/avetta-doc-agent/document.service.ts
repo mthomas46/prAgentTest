@@ -1,10 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DocumentData } from './interfaces/webhook-event.interface';
+import { LoggerService } from '../common/services/logger.service';
 
 @Injectable()
 export class DocumentService {
-  private readonly logger = new Logger(DocumentService.name);
   private readonly documents = new Map<string, DocumentData>();
+
+  constructor(private readonly logger: LoggerService) {}
 
   async createDocument(data: DocumentData): Promise<void> {
     this.logger.log(`Creating document: ${data.documentId}`);

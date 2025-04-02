@@ -5,6 +5,10 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -26,9 +30,6 @@
     "test:docker:clean": "docker-compose -f docker-compose.test.yml down -v",
     "prometheus:generate": "nest generate prometheus-metrics",
     "prepare": "husky install"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
@@ -88,22 +89,5 @@
       "eslint --fix",
       "prettier --write"
     ]
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

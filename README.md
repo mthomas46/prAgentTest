@@ -65,3 +65,33 @@ $ npm run test:cov
 ## License
 
 UNLICENSED
+
+# Task Management API
+
+## Database Management
+
+### Database Viewer (Adminer)
+
+The project includes a Dockerized Adminer instance for database management. To access it:
+
+1. Start the database viewer:
+```bash
+docker-compose up adminer
+```
+
+2. Access Adminer at http://localhost:8080
+
+3. Login details:
+   - System: SQLite3
+   - Database: /data/tasks.db
+   - Username: (leave empty)
+   - Password: (leave empty)
+
+Features:
+- Real-time database inspection
+- SQL query execution
+- Table structure viewing
+- Data browsing and editing
+- Export/Import functionality
+
+Note: The database file is mounted from the `./data` directory. Make sure this directory exists and has proper permissions.

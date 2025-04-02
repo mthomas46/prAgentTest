@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AvettaDocAgentModule } from './avetta-doc-agent.module';
-import { LoggerService } from './logger.service';
+import { LoggerService } from '../common/services/logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AvettaDocAgentModule, {

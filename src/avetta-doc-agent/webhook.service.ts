@@ -1,18 +1,19 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import crypto from 'crypto';
 import { WebhookEvent, WebhookResponse, DocumentData } from './interfaces/webhook-event.interface';
 import { DocumentService } from './document.service';
+import { LoggerService } from '../common/services/logger.service';
 
 @Injectable()
 export class WebhookService {
-  private readonly logger = new Logger(WebhookService.name);
   private readonly supportedEvents = ['document.created', 'document.updated', 'document.deleted'] as const;
   private readonly supportedDocumentTypes = ['contract', 'policy', 'certificate', 'report'] as const;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
+    private readonly logger: LoggerService,
   ) {}
 
   async processWebhook(payload: any, signature: string): Promise<WebhookResponse> {
@@ -27,7 +28,7 @@ export class WebhookService {
       const event = this.validateAndParseEvent(payload);
       
       // Process the webhook payload
-      this.logger.log(`Processing webhook event: ${event.event}`, event);
+      this.logger.log(`Processing webhook event: ${event.event}`, JSON.stringify(event));
 
       // Handle different event types
       await this.handleEvent(event);
@@ -126,17 +127,17 @@ export class WebhookService {
   }
 
   private async handleDocumentCreated(data: DocumentData): Promise<void> {
-    this.logger.log('Processing document creation:', data);
+    this.logger.log('Processing document creation:', JSON.stringify(data));
     await this.documentService.createDocument(data);
   }
 
   private async handleDocumentUpdated(data: DocumentData): Promise<void> {
-    this.logger.log('Processing document update:', data);
+    this.logger.log('Processing document update:', JSON.stringify(data));
     await this.documentService.updateDocument(data);
   }
 
   private async handleDocumentDeleted(data: DocumentData): Promise<void> {
-    this.logger.log('Processing document deletion:', data);
+    this.logger.log('Processing document deletion:', JSON.stringify(data));
     await this.documentService.deleteDocument(data);
   }
 
