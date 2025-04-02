@@ -19,14 +19,6 @@ const envSchema = z.object({
 });
 
 /**
- * Application constants
- */
-export const constants = {
-  ALLOWED_DOC_FILES: ['README.md', 'CHANGELOG.md', 'dialogue.md', 'STATISTICS.md'] as const,
-  DEFAULT_DOC_FILE: 'README.md' as const
-} as const;
-
-/**
  * Parse and validate environment variables
  * @returns {Config} Validated configuration object
  * @throws {Error} If environment variables are invalid
