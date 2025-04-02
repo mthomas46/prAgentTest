@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { HealthModule } from './health/health.module';
+import { MonitoringModule } from './monitoring/monitoring.module';
 import configuration from './config/configuration';
 import databaseConfig from './config/database.config';
 
@@ -25,6 +26,7 @@ import databaseConfig from './config/database.config';
     }),
     TasksModule,
     HealthModule,
+    MonitoringModule,
   ],
   controllers: [AppController],
   providers: [AppService],
