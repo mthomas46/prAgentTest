@@ -1,5 +1,5 @@
 // Import necessary modules for Swagger
-import * as swaggerJSDoc from 'swagger-jsdoc';  // Swagger JSDoc for generating docs
+import swaggerJSDoc from 'swagger-jsdoc';  // Swagger JSDoc for generating docs
 import { Options } from 'swagger-jsdoc';  // Swagger Options type
 
 /**
