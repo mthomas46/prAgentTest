@@ -1,0 +1,165 @@
+/* Statistics page styles */
+.chart-container {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    height: 400px;
+    position: relative;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.metrics-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Loading state */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+/* Error state */
+.error {
+    padding: 1rem;
+    margin: 1rem 0;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    color: #dc2626;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+    
+    .metrics-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chart legend */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* Historical trends specific styles */
+#historical-trends {
+    height: 500px;
+}
+
+@media (max-width: 768px) {
+    #historical-trends {
+        height: 400px;
+    }
+}
+
+/* Section headers */
+.docs-content h2 {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.docs-content h3 {
+    color: var(--text-color);
+    font-size: 1.25rem;
+    margin: 1.5rem 0 1rem;
+}
+
+/* Methodology section */
+.docs-content ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.docs-content ul li {
+    margin-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.docs-content ul li::before {
+    content: "•";
+    color: var(--primary-color);
+    position: absolute;
+    left: 0;
+}
+
+/* Recommendations section */
+.docs-content ol {
+    padding-left: 1.5rem;
+}
+
+.docs-content ol li {
+    margin-bottom: 0.75rem;
+    color: #4b5563;
+}
+
+/* Notes section */
+.docs-content blockquote {
+    background: #f3f4f6;
+    border-left: 4px solid var(--primary-color);
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.docs-content blockquote p {
+    margin: 0;
+    color: #4b5563;
+} 

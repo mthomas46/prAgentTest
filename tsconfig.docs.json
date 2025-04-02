@@ -10,6 +10,6 @@
     "declaration": false,
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
   },
-  "include": ["src/public/js/docs.ts"],
+  "include": ["src/public/js/**/*.ts"],
   "exclude": ["node_modules"]
 } 
