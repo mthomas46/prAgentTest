@@ -59,6 +59,8 @@ export interface ErrorResponse {
   error: string;
   /** Requested path */
   path: string;
+  /** Optional detailed error message */
+  message?: string;
 }
 
 /**

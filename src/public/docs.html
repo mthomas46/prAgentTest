@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Documentation</title>
+    <link rel="stylesheet" href="/css/docs.css">
+    <link rel="stylesheet" href="/css/statistics.css">
+    <!-- Add Chart.js -->
+    <script src="/js/lib/chart.umd.min.js"></script>
+    <!-- Add marked for markdown rendering -->
+    <script src="/js/lib/marked.min.js"></script>
+    <script type="module" src="/js/docs.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -241,35 +248,32 @@
             text-decoration: underline;
         }
     </style>
-    <script src="/src/public/js/lib/marked.min.js"></script>
-    <script type="module" src="/src/public/js/docs.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>API Documentation</h1>
-            <p class="subtitle">Comprehensive documentation for the Express TypeScript API</p>
-        </header>
-    </div>
-    
     <div class="container">
         <nav class="docs-nav">
             <h2>Documentation</h2>
             <ul>
-                <li><a href="#README" data-file="README.md">Overview</a></li>
-                <li><a href="#dialogue" data-file="dialogue.md">Dialogue</a></li>
-                <li><a href="#CHANGELOG" data-file="CHANGELOG.md">Changelog</a></li>
+                <li><a href="/docs/README.md">Introduction</a></li>
+                <li><a href="/docs/GETTING_STARTED.md">Getting Started</a></li>
+                <li><a href="/docs/API.md">API Reference</a></li>
+                <li><a href="/docs/STATISTICS.md">Code Statistics</a></li>
+                <li><a href="/docs/CONTRIBUTING.md">Contributing</a></li>
             </ul>
-            <a href="/" class="back-link">← Back to Home</a>
+            <div class="back-link">
+                <a href="/">&larr; Back to Home</a>
+            </div>
         </nav>
-        
-        <main class="docs-content">
-            <div id="content-container">
+        <main>
+            <header>
+                <h1>API Documentation</h1>
+                <p class="subtitle">Explore our API documentation and code statistics</p>
+            </header>
+            <div class="docs-content">
                 <div class="loading">Loading documentation...</div>
             </div>
         </main>
     </div>
-    
     <div class="container">
         <footer>
             <p class="version">Version 1.0.0</p>
