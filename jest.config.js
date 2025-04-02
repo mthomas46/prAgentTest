@@ -1,20 +1,16 @@
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
-  testEnvironment: 'node',
-  testRegex: '.e2e-spec.ts$',
+  testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  collectCoverageFrom: [
-    'src/**/*.(t|j)s',
-    '!src/**/*.spec.(t|j)s',
-    '!src/**/*.e2e-spec.(t|j)s',
-  ],
-  coverageDirectory: 'coverage',
-  testTimeout: 10000,
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coverageDirectory: './coverage',
+  testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/test/jest.setup.ts'],
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/src/$1',
+    '^test/(.*)$': '<rootDir>/test/$1',
+  },
 }; 

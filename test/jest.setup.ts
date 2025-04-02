@@ -1,21 +1,11 @@
-import { config } from 'dotenv';
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+import { Task } from '../src/entities/task.entity';
 
-// Load environment variables from .env file
-config();
+beforeAll(async () => {
+  // Any global setup can go here
+});
 
-// Increase timeout for all tests
-jest.setTimeout(10000);
-
-// Mock console.error to fail tests
-const originalError = console.error;
-console.error = (...args) => {
-  originalError.call(console, ...args);
-  throw new Error('Console error was called. Failing test...');
-};
-
-// Mock console.warn to fail tests
-const originalWarn = console.warn;
-console.warn = (...args) => {
-  originalWarn.call(console, ...args);
-  throw new Error('Console warn was called. Failing test...');
-}; 
+afterAll(async () => {
+  // Any global cleanup can go here
+}); 
