@@ -25,7 +25,10 @@
     "test:docker": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit",
     "test:docker:clean": "docker-compose -f docker-compose.test.yml down -v",
     "prometheus:generate": "nest generate prometheus-metrics",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "liquibase:update": "liquibase --defaultsFile=./liquibase.properties update",
+    "liquibase:rollback": "liquibase --defaultsFile=./liquibase.properties rollbackCount 1",
+    "test:e2e:integration": "jest --config ./test/jest-e2e.json --runInBand --detectOpenHandles"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -68,6 +71,7 @@
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.16",
+    "@types/uuid": "10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "dotenv": "^16.4.7",
@@ -78,6 +82,7 @@
     "jest": "^29.5.0",
     "jest-junit": "^16.0.0",
     "lint-staged": "^15.0.0",
+    "liquibase": "^4.4.0",
     "prettier": "^3.0.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.4",
@@ -85,7 +90,8 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "uuid": "11.1.0"
   },
   "lint-staged": {
     "*.ts": [
