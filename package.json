@@ -22,6 +22,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:ci": "jest --ci --coverage --reporters=default --reporters=jest-junit",
+    "test:docker": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit",
+    "test:docker:clean": "docker-compose -f docker-compose.test.yml down -v",
     "prometheus:generate": "nest generate prometheus-metrics",
     "prepare": "husky install"
   },

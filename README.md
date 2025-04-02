@@ -84,16 +84,60 @@ http://localhost:3000/api
 
 ## Testing
 
+### Test Setup
+
+The project includes comprehensive testing capabilities with both unit tests and Docker-based integration tests.
+
+#### Running Tests
+
+1. **Standard Tests**
 ```bash
-# unit tests
-npm run test
-
-# e2e tests
-npm run test:e2e
-
-# test coverage
-npm run test:cov
+npm run test              # Run all tests
+npm run test:watch       # Run tests in watch mode
+npm run test:cov        # Run tests with coverage
+npm run test:e2e        # Run end-to-end tests
 ```
+
+2. **Docker Tests**
+```bash
+npm run test:docker      # Run tests in Docker environment
+npm run test:docker:clean # Clean up Docker test containers and volumes
+```
+
+### Docker Test Environment
+
+The Docker test setup (`docker-compose.test.yml`) provides an isolated testing environment with:
+- Dedicated PostgreSQL test database
+- Automatic database initialization
+- Health checks for service readiness
+- Volume management for test data persistence
+
+#### Configuration
+
+- Test database runs on port 5433 (to avoid conflicts with development database)
+- Database credentials are configured in the Docker environment
+- Tests use TypeORM with automatic schema synchronization
+- Database is cleaned before each test run
+
+### Test Structure
+
+1. **Unit Tests**
+   - Service tests (`test/tasks/task.service.spec.ts`)
+   - Controller tests (`test/tasks/task.controller.spec.ts`)
+   - Entity tests (`test/database/task.entity.e2e-spec.ts`)
+
+2. **Integration Tests**
+   - Database integration tests
+   - API endpoint tests
+   - Error handling tests
+
+### CI/CD Integration
+
+The test suite is integrated with the CI/CD pipeline and includes:
+- Automated testing on pull requests
+- Coverage reporting
+- Test artifacts storage
+- Docker-based test execution
 
 ## Contributing
 

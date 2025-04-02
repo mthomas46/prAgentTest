@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
-import { Task } from '../entities/task.entity';
+import { Task, TaskPriority } from '../entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
@@ -33,7 +33,10 @@ export class TasksService {
 
   async create(createTaskDto: CreateTaskDto): Promise<Task> {
     try {
-      const task = this.tasksRepository.create(createTaskDto);
+      const task = this.tasksRepository.create({
+        ...createTaskDto,
+        priority: createTaskDto.priority ? TaskPriority[createTaskDto.priority.toUpperCase()] : TaskPriority.MEDIUM,
+      });
       return await this.tasksRepository.save(task);
     } catch (error) {
       throw new BadRequestException('Failed to create task');
@@ -43,7 +46,11 @@ export class TasksService {
   async update(id: string, createTaskDto: CreateTaskDto): Promise<Task> {
     try {
       await this.findOne(id);
-      await this.tasksRepository.update(id, createTaskDto);
+      const updateData = {
+        ...createTaskDto,
+        priority: createTaskDto.priority ? TaskPriority[createTaskDto.priority.toUpperCase()] : undefined,
+      };
+      await this.tasksRepository.update(id, updateData);
       return this.findOne(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
