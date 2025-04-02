@@ -15,6 +15,8 @@ A modern NestJS-based REST API for task management with TypeScript, PostgreSQL, 
 - 🛡️ Input validation
 - 📝 Request/Response logging
 - ⏱️ Request timeout handling
+- 📈 Metrics and monitoring (Prometheus, Grafana)
+- 🔍 System observability
 
 ## Prerequisites
 
@@ -66,6 +68,22 @@ Once the application is running, you can access the Swagger documentation at:
 ```
 http://localhost:3000/api
 ```
+
+## Monitoring & Metrics
+
+The application includes comprehensive monitoring and metrics collection using:
+- Prometheus for metrics collection
+- Grafana for metrics visualization
+- Custom application metrics
+- Node Exporter for system metrics
+
+For detailed information about the monitoring setup, usage, and best practices, see [DevOps Tooling Documentation](docs/devops-tooling.md).
+
+### Accessing Monitoring Tools
+
+- Metrics endpoint: http://localhost:3000/v1/metrics
+- Prometheus UI: http://localhost:9090
+- Grafana dashboards: http://localhost:3001
 
 ## API Endpoints
 
