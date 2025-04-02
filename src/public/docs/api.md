@@ -1,187 +1,182 @@
 # API Reference
 
-This document provides detailed information about the API endpoints, request/response formats, and authentication.
+This document provides detailed information about all available API endpoints, their request/response formats, and examples.
+
+## Base URL
+
+All API endpoints are prefixed with:
+```
+http://localhost:8090/api
+```
 
 ## Authentication
 
-All API requests require authentication using an API key. Include your API key in the `Authorization` header:
+Currently, the API does not require authentication. All endpoints are publicly accessible.
 
-```bash
-Authorization: Bearer your-api-key
-```
+## Common Headers
 
-### Getting an API Key
-
-1. Sign up for an account at https://api.example.com/signup
-2. Navigate to your account settings
-3. Generate a new API key
+- `Accept`: Specify response format (`application/json`, `text/html`, `text/markdown`)
+- `Content-Type`: For requests with body, use `application/json`
 
 ## Endpoints
 
-### Users
+### Health Check
 
-#### Get Current User
-
+#### Get Basic Health Status
 ```http
-GET /api/users/me
+GET /api/health
 ```
 
-Response:
+Returns basic health status information including uptime and memory usage.
+
+**Response**
 ```json
 {
-  "id": "user_123",
-  "email": "user@example.com",
-  "name": "John Doe",
-  "createdAt": "2024-04-02T00:00:00Z"
-}
-```
-
-#### Update User Profile
-
-```http
-PATCH /api/users/me
-Content-Type: application/json
-
-{
-  "name": "John Smith",
-  "email": "john@example.com"
-}
-```
-
-Response:
-```json
-{
-  "id": "user_123",
-  "email": "john@example.com",
-  "name": "John Smith",
-  "updatedAt": "2024-04-02T00:00:00Z"
-}
-```
-
-### Projects
-
-#### List Projects
-
-```http
-GET /api/projects
-```
-
-Response:
-```json
-{
-  "projects": [
-    {
-      "id": "proj_123",
-      "name": "My Project",
-      "description": "Project description",
-      "createdAt": "2024-04-02T00:00:00Z"
+    "status": "ok",
+    "timestamp": "2024-04-02T08:00:00.000Z",
+    "uptime": 3600,
+    "memoryUsage": {
+        "heapUsed": 123456789,
+        "heapTotal": 987654321,
+        "external": 123456789
     }
-  ],
-  "total": 1,
-  "page": 1,
-  "perPage": 10
 }
 ```
 
-#### Create Project
-
+#### Get Detailed Health Status
 ```http
-POST /api/projects
-Content-Type: application/json
-
-{
-  "name": "New Project",
-  "description": "Project description"
-}
+GET /api/health/detailed
 ```
 
-Response:
+Returns detailed health information including memory usage statistics and process information.
+
+**Response**
 ```json
 {
-  "id": "proj_123",
-  "name": "New Project",
-  "description": "Project description",
-  "createdAt": "2024-04-02T00:00:00Z"
+    "status": "ok",
+    "timestamp": "2024-04-02T08:00:00.000Z",
+    "uptime": 3600,
+    "memoryUsage": {
+        "heapUsed": 123456789,
+        "heapTotal": 987654321,
+        "external": 123456789,
+        "rss": 123456789
+    },
+    "process": {
+        "pid": 12345,
+        "version": "v18.0.0",
+        "platform": "darwin",
+        "arch": "x64"
+    }
 }
 ```
 
-## Error Responses
+### Documentation
 
-All endpoints may return the following error responses:
+#### Get Documentation
+```http
+GET /api/docs/{filename}
+```
 
-### 400 Bad Request
+Retrieve documentation in either HTML or Markdown format.
+
+**Parameters**
+- `filename` (string) - Name of the documentation file to retrieve
+  - `docs` - Overview documentation
+  - `api` - API reference
+  - `health` - Health check documentation
+
+**Headers**
+- `Accept: text/html` - Returns rendered HTML
+- `Accept: text/markdown` - Returns raw Markdown
+
+**Response (HTML)**
+```http
+HTTP/1.1 200 OK
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+...
+</html>
+```
+
+**Response (Markdown)**
+```http
+HTTP/1.1 200 OK
+Content-Type: text/markdown
+
+# API Documentation
+...
+```
+
+### API Overview
+
+#### Get API Overview
+```http
+GET /api
+```
+
+Returns an overview of the API, including available endpoints and version information.
+
+**Response**
+```json
+{
+    "name": "Express TypeScript API",
+    "version": "1.0.0",
+    "description": "A modern API built with Express.js and TypeScript",
+    "endpoints": [
+        {
+            "path": "/api/health",
+            "method": "GET",
+            "description": "Basic health check"
+        },
+        {
+            "path": "/api/health/detailed",
+            "method": "GET",
+            "description": "Detailed health information"
+        }
+    ]
+}
+```
+
+## Error Handling
+
+All error responses follow this format:
 
 ```json
 {
-  "error": "Bad Request",
-  "message": "Invalid request parameters",
-  "details": {
-    "field": "name",
-    "message": "Name is required"
-  }
+    "error": "Error Type",
+    "message": "Human-readable error message",
+    "statusCode": 400,
+    "details": {} // Optional additional error details
 }
 ```
 
-### 401 Unauthorized
-
-```json
-{
-  "error": "Unauthorized",
-  "message": "Invalid or missing API key"
-}
-```
-
-### 404 Not Found
-
-```json
-{
-  "error": "Not Found",
-  "message": "Resource not found"
-}
-```
-
-### 429 Too Many Requests
-
-```json
-{
-  "error": "Too Many Requests",
-  "message": "Rate limit exceeded",
-  "retryAfter": 60
-}
-```
+Common error types:
+- `BadRequest` - Invalid request parameters
+- `NotFound` - Resource not found
+- `InternalError` - Server error
 
 ## Rate Limiting
 
-- Free tier: 100 requests per minute
-- Pro tier: 1000 requests per minute
-- Enterprise tier: Custom limits
+The API implements rate limiting to ensure fair usage:
+- 100 requests per 15 minutes per IP address
+- Rate limit headers included in responses:
+  - `X-RateLimit-Limit` - Maximum requests per window
+  - `X-RateLimit-Remaining` - Remaining requests in current window
+  - `X-RateLimit-Reset` - Time when the rate limit window resets
 
-Rate limit headers are included in all responses:
+## Response Format
 
-```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1614787200
-```
+All successful API responses follow this structure:
 
-## Best Practices
-
-1. **Error Handling**
-   - Always check the response status code
-   - Parse error responses for detailed information
-   - Implement exponential backoff for retries
-
-2. **Rate Limiting**
-   - Monitor rate limit headers
-   - Implement request queuing
-   - Use bulk operations when available
-
-3. **Authentication**
-   - Keep API keys secure
-   - Rotate keys regularly
-   - Use environment variables for keys
-
-4. **Performance**
-   - Use pagination for large datasets
-   - Implement caching where appropriate
-   - Use compression for large payloads 
+```json
+{
+    "data": {}, // The actual response data
+    "meta": {
+        "timestamp": "2024-04-02T08:00:00.000Z",
+        "requestId": "unique-request-id"
+    }
+}
+``` 

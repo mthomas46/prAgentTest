@@ -1,33 +1,30 @@
-import { marked } from 'marked';
+import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 
-// Configure marked with highlight.js
-marked.setOptions({
+// Create markdown-it instance with configuration
+const md = new MarkdownIt({
+    html: true,
     breaks: true,
-    gfm: true,
-    highlight: (code: string, lang: string): string => {
+    linkify: true,
+    highlight: (str: string, lang: string): string => {
         if (lang && hljs.getLanguage(lang)) {
             try {
-                return hljs.highlight(code, { language: lang }).value;
-            } catch (err) {
-                console.error('Error highlighting code:', err);
+                return `<pre class="hljs"><code class="language-${lang}">${
+                    hljs.highlight(str, { language: lang, ignoreIllegals: true }).value
+                }</code></pre>`;
+            } catch (error) {
+                console.error('Error highlighting code:', error);
             }
         }
-        return code;
+        return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
     }
-} as Parameters<typeof marked.setOptions>[0]);
+});
 
 /**
  * Renders markdown content to HTML with syntax highlighting
  * @param markdown - The markdown content to render
- * @returns Promise<string> - The rendered HTML content
+ * @returns string - The rendered HTML content
  */
-export const renderMarkdown = async (markdown: string): Promise<string> => {
-    try {
-        const result = await marked(markdown);
-        return result;
-    } catch (error) {
-        console.error('Error rendering markdown:', error);
-        throw error;
-    }
-}; 
+export function renderMarkdown(markdown: string): string {
+    return md.render(markdown);
+} 

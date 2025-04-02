@@ -1,24 +1,85 @@
-# API Documentation
+# Express TypeScript API Documentation
 
-Welcome to the API documentation. This guide will help you understand and use our API effectively.
+Welcome to the Express TypeScript API documentation. This API provides a modern, type-safe interface built with Express.js and TypeScript.
+
+## Overview
+
+The API is designed with the following principles:
+- Type safety with TypeScript
+- Clean and consistent API design
+- Comprehensive documentation
+- Built-in health monitoring
+- Interactive API exploration with Swagger UI
+
+## Quick Links
+
+- [API Reference](api) - Detailed API endpoint documentation
+- [Health Check](health) - Health monitoring endpoints
+- [Swagger UI](/swagger) - Interactive API documentation
+- [API Overview](/api) - Quick endpoint reference
+
+## Features
+
+### Type Safety
+Built with TypeScript, providing compile-time type checking and better development experience.
+
+### Documentation
+- Markdown-based documentation with syntax highlighting
+- Interactive Swagger UI documentation
+- HTML and Markdown response formats
+
+### Health Monitoring
+- Basic and detailed health check endpoints
+- Memory usage statistics
+- Process information
+
+### API Design
+- RESTful endpoints
+- Consistent response formats
+- Proper error handling
+- Rate limiting
 
 ## Getting Started
 
-To get started with the API, you'll need to:
+1. Base URL: `http://localhost:8090/api`
+2. No authentication required (all endpoints are public)
+3. Supports both JSON and HTML responses
+4. Rate limited to 100 requests per 15 minutes
 
-1. Obtain an API key
-2. Set up your environment
-3. Make your first request
+## Response Format
 
-### API Key
+All API responses follow this structure:
 
-To obtain an API key, please contact our support team.
-
-```bash
-curl -X POST https://api.example.com/v1/auth \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "your-password"}'
+```json
+{
+    "data": {}, // The actual response data
+    "meta": {
+        "timestamp": "2024-04-02T08:00:00.000Z",
+        "requestId": "unique-request-id"
+    }
+}
 ```
+
+## Error Handling
+
+Error responses follow this format:
+
+```json
+{
+    "error": "Error Type",
+    "message": "Human-readable error message",
+    "statusCode": 400,
+    "details": {} // Optional additional error details
+}
+```
+
+Common HTTP status codes:
+- `200` - Success
+- `400` - Bad Request
+- `401` - Unauthorized
+- `403` - Forbidden
+- `404` - Not Found
+- `500` - Internal Server Error
 
 ## Endpoints
 
@@ -43,22 +104,6 @@ interface User {
 ```
 
 > **Note**: All timestamps are in UTC.
-
-## Error Handling
-
-The API uses standard HTTP status codes:
-
-- 200: Success
-- 400: Bad Request
-- 401: Unauthorized
-- 404: Not Found
-- 500: Internal Server Error
-
-## Rate Limiting
-
-API requests are limited to:
-- 100 requests per minute for free tier
-- 1000 requests per minute for pro tier
 
 ## Best Practices
 

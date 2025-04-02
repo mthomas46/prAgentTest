@@ -10,27 +10,27 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// List of allowed documentation files
-const allowedFiles = ['docs', 'api', 'health'];
+// List of allowed project documentation files
+const allowedFiles = ['README', 'CHANGELOG', 'DIALOGUE_LOG', 'STATISTICS'];
 
 /**
  * @swagger
- * /api/docs/{filename}:
+ * /api/project-docs/{filename}:
  *   get:
- *     summary: Get documentation file
- *     description: Returns documentation in either Markdown or HTML format based on Accept header
- *     tags: [Documentation]
+ *     summary: Get project documentation file
+ *     description: Returns project documentation in either Markdown or HTML format based on Accept header
+ *     tags: [Project Documentation]
  *     parameters:
  *       - in: path
  *         name: filename
  *         required: true
  *         schema:
  *           type: string
- *           enum: [docs, api, health]
- *         description: Name of the documentation file to retrieve
+ *           enum: [README, CHANGELOG, DIALOGUE_LOG, STATISTICS]
+ *         description: Name of the project documentation file to retrieve
  *     responses:
  *       200:
- *         description: Documentation content
+ *         description: Project documentation content
  *         content:
  *           text/markdown:
  *             schema:
@@ -55,7 +55,7 @@ router.get('/:filename', async (req, res) => {
             });
         }
 
-        const filePath = path.join(__dirname, '..', 'public', 'docs', `${filename}.md`);
+        const filePath = path.join(__dirname, '..', '..', 'docs', `${filename}.md`);
         
         // Read the markdown file
         const markdown = await fs.readFile(filePath, 'utf-8');
@@ -72,10 +72,10 @@ router.get('/:filename', async (req, res) => {
             res.type('text/markdown').send(markdown);
         }
     } catch (error) {
-        console.error('Error serving documentation:', error);
+        console.error('Error serving project documentation:', error);
         res.status(500).json({
             error: 'Internal Server Error',
-            message: 'Failed to serve documentation'
+            message: 'Failed to serve project documentation'
         });
     }
 });

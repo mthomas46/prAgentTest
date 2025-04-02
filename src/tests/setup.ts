@@ -1,18 +1,17 @@
-import { config } from 'dotenv';
-import { app } from '../index.js';
+import { config } from '../utils/config.js';
+import app from '../index.js';
+import supertest from 'supertest';
 import type { Server } from 'http';
 
-// Load test environment variables
-config();
+export const request = supertest(app);
+export const testConfig = config;
 
 let server: Server;
 
-// @ts-ignore - These are provided by the test environment
 beforeAll(() => {
-  server = app.listen(0);
+    server = app.listen(0);
 });
 
-// @ts-ignore - These are provided by the test environment
-afterAll((done: () => void) => {
-  server.close(done);
+afterAll((done) => {
+    server.close(done);
 }); 

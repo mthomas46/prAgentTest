@@ -1,79 +1,132 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface HealthStatus {
-    status: 'ok' | 'degraded' | 'down';
+    status: 'ok' | 'error';
     timestamp: string;
-    version: string;
-    services?: {
-        [key: string]: {
-            status: 'ok' | 'degraded' | 'down';
-            latency: number;
-            lastCheck: string;
-        };
-    };
-    system?: {
-        uptime: number;
-        memory: {
-            total: number;
-            used: number;
-            free: number;
-        };
-        cpu: {
-            load: number;
-            cores: number;
-        };
+    uptime: number;
+    memory?: {
+        heapUsed: number;
+        heapTotal: number;
+        external: number;
     };
 }
 
-// Basic health check endpoint
-router.get('/', (_: Request, res: Response): void => {
-    const status: HealthStatus = {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-    };
-    res.json(status);
-});
-
-// Detailed health check endpoint
-router.get('/detailed', (_: Request, res: Response): void => {
-    const status: HealthStatus = {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        services: {
-            database: {
-                status: 'ok',
-                latency: 5,
-                lastCheck: new Date().toISOString()
-            },
-            cache: {
-                status: 'ok',
-                latency: 2,
-                lastCheck: new Date().toISOString()
-            },
-            storage: {
-                status: 'ok',
-                latency: 10,
-                lastCheck: new Date().toISOString()
-            }
-        },
-        system: {
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Get API health status
+ *     description: Returns the current health status of the API, including uptime and memory usage
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [ok, error]
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 uptime:
+ *                   type: number
+ *                   description: Server uptime in seconds
+ *                 memory:
+ *                   type: object
+ *                   properties:
+ *                     heapUsed:
+ *                       type: number
+ *                       description: Currently used heap memory in bytes
+ *                     heapTotal:
+ *                       type: number
+ *                       description: Total heap memory in bytes
+ *                     external:
+ *                       type: number
+ *                       description: External memory usage in bytes
+ *           text/html:
+ *             description: HTML documentation page
+ *       503:
+ *         description: API is experiencing issues
+ */
+router.get('/', (req: express.Request, res: express.Response): void => {
+    // Check if client accepts HTML
+    if (req.accepts('html')) {
+        res.sendFile(path.join(__dirname, '..', 'public', 'health.html'));
+    } else {
+        // Default to JSON response
+        const status: HealthStatus = {
+            status: 'ok',
+            timestamp: new Date().toISOString(),
             uptime: process.uptime(),
             memory: {
-                total: 8589934592,
-                used: 4294967296,
-                free: 4294967296
-            },
-            cpu: {
-                load: 0.5,
-                cores: 4
+                heapUsed: process.memoryUsage().heapUsed,
+                heapTotal: process.memoryUsage().heapTotal,
+                external: process.memoryUsage().external
             }
+        };
+        res.json(status);
+    }
+});
+
+/**
+ * @swagger
+ * /api/health/detailed:
+ *   get:
+ *     summary: Get detailed health status
+ *     description: Returns detailed health information including memory usage statistics
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Detailed health status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [ok, error]
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 uptime:
+ *                   type: number
+ *                   description: Server uptime in seconds
+ *                 memory:
+ *                   type: object
+ *                   properties:
+ *                     heapUsed:
+ *                       type: number
+ *                       description: Currently used heap memory in bytes
+ *                     heapTotal:
+ *                       type: number
+ *                       description: Total heap memory in bytes
+ *                     external:
+ *                       type: number
+ *                       description: External memory usage in bytes
+ */
+router.get('/detailed', (_: express.Request, res: express.Response): void => {
+    const status: HealthStatus = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: {
+            heapUsed: process.memoryUsage().heapUsed,
+            heapTotal: process.memoryUsage().heapTotal,
+            external: process.memoryUsage().external
         }
     };
     res.json(status);
 });
 
-export const healthRouter = router; 
+export default router; 
