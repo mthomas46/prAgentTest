@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express TypeScript API</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --text-color: #1f2937;
+            --bg-color: #ffffff;
+            --hover-color: #1d4ed8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+
+        .links {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .link-card {
+            background: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+
+        .link-card:hover {
+            background: #e5e7eb;
+            transform: translateY(-2px);
+        }
+
+        .link-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .link-card p {
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .version {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Express TypeScript API</h1>
+            <p class="subtitle">A modern, type-safe REST API built with Express.js and TypeScript</p>
+        </header>
+
+        <div class="links">
+            <a href="/api-docs" class="link-card">
+                <h2>API Documentation</h2>
+                <p>Explore the API endpoints, request/response schemas, and test the API directly from your browser.</p>
+            </a>
+
+            <a href="/docs.html" class="link-card">
+                <h2>Project Documentation</h2>
+                <p>Access comprehensive project documentation including README, changelog, and development history.</p>
+            </a>
+
+            <a href="/api" class="link-card">
+                <h2>API Status</h2>
+                <p>Check the current status of the API and view basic information about the service.</p>
+            </a>
+
+            <a href="/api/health" class="link-card">
+                <h2>Health Check</h2>
+                <p>Monitor the health status of the API and ensure it's running properly.</p>
+            </a>
+        </div>
+
+        <footer>
+            <p class="version">Version 1.0.0</p>
+        </footer>
+    </div>
+</body>
+</html> 

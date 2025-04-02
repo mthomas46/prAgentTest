@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Check - Express TypeScript API</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --text-color: #1f2937;
+            --bg-color: #ffffff;
+            --hover-color: #1d4ed8;
+            --success-color: #059669;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+
+        .health-card {
+            background: #f3f4f6;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .health-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .status-indicator {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            margin-right: 1rem;
+        }
+
+        .status-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        .health-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .health-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .health-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .health-value {
+            color: #4b5563;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--hover-color);
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .version {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Health Check</h1>
+            <p class="subtitle">Current health status of the API service</p>
+        </header>
+
+        <div class="health-card">
+            <div class="health-status">
+                <div class="status-indicator"></div>
+                <div class="status-text">Healthy</div>
+            </div>
+            <div class="health-item">
+                <div class="health-label">Last Check</div>
+                <div class="health-value" id="timestamp">Loading...</div>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">← Back to Home</a>
+
+        <footer>
+            <p class="version">Version 1.0.0</p>
+        </footer>
+    </div>
+
+    <script>
+        // Update timestamp
+        function updateTimestamp() {
+            const timestamp = new Date().toISOString();
+            document.getElementById('timestamp').textContent = timestamp;
+        }
+
+        // Update immediately and then every 5 seconds
+        updateTimestamp();
+        setInterval(updateTimestamp, 5000);
+    </script>
+</body>
+</html> 
