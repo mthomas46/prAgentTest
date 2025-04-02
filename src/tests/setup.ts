@@ -1,16 +1,18 @@
 import { config } from 'dotenv';
-import { resolve } from 'path';
-import { app } from '../index';
+import { app } from '../index.js';
+import type { Server } from 'http';
 
 // Load test environment variables
-config({ path: resolve(__dirname, '../../.env.test') });
+config();
 
-let server: any;
+let server: Server;
 
+// @ts-ignore - These are provided by the test environment
 beforeAll(() => {
   server = app.listen(0);
 });
 
-afterAll((done) => {
+// @ts-ignore - These are provided by the test environment
+afterAll((done: () => void) => {
   server.close(done);
 }); 
