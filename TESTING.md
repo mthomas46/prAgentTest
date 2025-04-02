@@ -400,4 +400,57 @@ Using husky for pre-commit validation:
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
 - [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)
 - [TypeORM Testing](https://typeorm.io/#/unit-testing)
-- [Supertest Documentation](https://github.com/visionmedia/supertest#readme) 
+- [Supertest Documentation](https://github.com/visionmedia/supertest#readme)
+
+## Logger Service Tests
+
+The logger service tests verify the functionality of our logging system. These tests ensure that:
+
+- The logger service is properly initialized
+- All log levels (info, error, warn, debug, verbose) work correctly
+- Context can be included in log messages
+- Error stack traces are properly handled
+
+### Node.js Version Requirements
+
+The project requires Node.js version 18 or higher for optimal compatibility. This is specified in the `package.json`:
+
+```json
+"engines": {
+  "node": ">=18.0.0",
+  "npm": ">=8.0.0"
+}
+```
+
+To ensure proper test execution:
+
+1. Install Node.js 18 using Homebrew:
+   ```bash
+   brew install node@18
+   ```
+
+2. Add Node.js 18 to your PATH:
+   ```bash
+   export PATH="/opt/homebrew/opt/node@18/bin:$PATH"
+   ```
+
+3. Verify the Node.js version:
+   ```bash
+   node -v  # Should show v18.x.x
+   ```
+
+4. Clean and reinstall dependencies:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+### Running Logger Tests
+
+To run the logger service tests specifically:
+
+```bash
+NODE_ENV=test npm test -- test/logger.service.spec.ts
+```
+
+The tests will output log messages to demonstrate the functionality of each log level. 
