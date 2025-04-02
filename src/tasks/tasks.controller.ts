@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpCode } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from '../entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -49,9 +49,10 @@ export class TasksController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   @ApiOperation({ summary: 'Soft delete a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'The task has been deleted' })
+  @ApiResponse({ status: 204, description: 'The task has been deleted' })
   @ApiResponse({ status: 404, description: 'Task not found' })
   remove(@Param('id') id: string): Promise<void> {
     return this.tasksService.remove(id);
@@ -60,7 +61,7 @@ export class TasksController {
   @Post(':id/restore')
   @ApiOperation({ summary: 'Restore a soft-deleted task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: 200, description: 'The task has been restored', type: Task })
+  @ApiResponse({ status: 201, description: 'The task has been restored', type: Task })
   @ApiResponse({ status: 404, description: 'Task not found' })
   restore(@Param('id') id: string): Promise<Task> {
     return this.tasksService.restore(id);

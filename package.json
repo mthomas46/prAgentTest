@@ -28,6 +28,7 @@
     "prepare": "husky install",
     "liquibase:update": "liquibase --defaultsFile=./liquibase.properties update",
     "liquibase:rollback": "liquibase --defaultsFile=./liquibase.properties rollbackCount 1",
+    "liquibase:clearChecksums": "liquibase --defaultsFile=./liquibase.properties clearChecksums",
     "test:e2e:integration": "jest --config ./test/jest-e2e.json --runInBand --detectOpenHandles"
   },
   "engines": {

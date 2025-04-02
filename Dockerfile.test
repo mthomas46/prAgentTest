@@ -1,0 +1,41 @@
+FROM node:18
+
+WORKDIR /app
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y default-jre postgresql-client wget && \
+    wget https://github.com/liquibase/liquibase/releases/download/v4.4.0/liquibase-4.4.0.tar.gz && \
+    mkdir -p /opt/liquibase && \
+    tar -xzf liquibase-4.4.0.tar.gz -C /opt/liquibase && \
+    mkdir -p /opt/liquibase/lib && \
+    wget https://jdbc.postgresql.org/download/postgresql-42.7.2.jar -O /opt/liquibase/lib/postgresql.jar && \
+    chmod +x /opt/liquibase/liquibase && \
+    ln -s /opt/liquibase/liquibase /usr/local/bin/liquibase && \
+    rm liquibase-4.4.0.tar.gz && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Verify Liquibase installation
+RUN liquibase --version
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build application
+RUN npm run build
+
+# Copy Liquibase configuration
+COPY liquibase.properties /app/liquibase.properties
+
+# Expose port
+EXPOSE 3000
+
+# Start application
+CMD ["npm", "run", "test"] 

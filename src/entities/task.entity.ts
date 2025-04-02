@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MaxLength, IsOptional, IsBoolean, IsEnum, IsDate } from 'class-validator';
 
 export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
 }
 
 @Entity('task')
@@ -36,6 +36,7 @@ export class Task {
   @Column({
     type: 'enum',
     enum: TaskPriority,
+    enumName: 'task_priority',
     default: TaskPriority.MEDIUM,
   })
   @IsEnum(TaskPriority)

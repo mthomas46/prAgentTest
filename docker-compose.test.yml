@@ -4,12 +4,17 @@ services:
   api-test:
     build:
       context: .
-      target: builder
+      dockerfile: Dockerfile.test
     environment:
       - NODE_ENV=test
-      - DATABASE_URL=postgresql://postgres:postgres@db-test:5432/api_test
+      - DB_HOST=db-test
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=api_test
     depends_on:
-      - db-test
+      db-test:
+        condition: service_healthy
     command: npm run test
 
   db-test:

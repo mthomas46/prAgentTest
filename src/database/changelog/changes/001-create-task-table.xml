@@ -6,38 +6,34 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
 
     <changeSet id="001" author="pragent">
-        <createTable tableName="task">
-            <column name="id" type="uuid">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="title" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="description" type="text">
-                <constraints nullable="false"/>
-            </column>
-            <column name="completed" type="boolean" defaultValueBoolean="false">
-                <constraints nullable="false"/>
-            </column>
-            <column name="priority" type="varchar(10)" defaultValue="MEDIUM">
-                <constraints nullable="false"/>
-            </column>
-            <column name="due_date" type="timestamp">
-                <constraints nullable="true"/>
-            </column>
-            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="updated_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="deleted_at" type="timestamp">
-                <constraints nullable="true"/>
-            </column>
-        </createTable>
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM pg_type WHERE typname = 'task_priority';
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            CREATE TYPE task_priority AS ENUM ('LOW', 'MEDIUM', 'HIGH');
+        </sql>
+    </changeSet>
 
+    <changeSet id="002" author="pragent">
+        <sql>
+            CREATE TABLE IF NOT EXISTS public.task (
+                id UUID NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                completed BOOLEAN DEFAULT FALSE NOT NULL,
+                priority task_priority DEFAULT 'MEDIUM' NOT NULL,
+                due_date TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                deleted_at TIMESTAMP,
+                CONSTRAINT task_pkey PRIMARY KEY (id)
+            );
+        </sql>
         <rollback>
-            <dropTable tableName="task"/>
+            DROP TABLE IF EXISTS public.task;
+            DROP TYPE IF EXISTS task_priority;
         </rollback>
     </changeSet>
 </databaseChangeLog> 

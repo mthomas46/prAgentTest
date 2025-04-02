@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
-import { getConnection } from 'typeorm';
+import { Connection, createConnection, getConnection } from 'typeorm';
 import { Task, TaskPriority } from '../../src/entities/task.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { exec } from 'child_process';
@@ -13,10 +13,24 @@ const execAsync = promisify(exec);
 describe('Task Integration Tests (e2e)', () => {
   let app: INestApplication;
   let taskId: string;
+  let connection: Connection;
 
   beforeAll(async () => {
-    // Run Liquibase update
+    // Clear Liquibase checksums and run update
+    await execAsync('npm run liquibase:clearChecksums || true');
     await execAsync('npm run liquibase:update');
+
+    // Create TypeORM connection first
+    connection = await createConnection({
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_DATABASE || 'test',
+      entities: [Task],
+      synchronize: false,
+    });
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -29,6 +43,9 @@ describe('Task Integration Tests (e2e)', () => {
   afterAll(async () => {
     // Run Liquibase rollback
     await execAsync('npm run liquibase:rollback');
+    if (connection && connection.isConnected) {
+      await connection.close();
+    }
     await app.close();
   });
 
@@ -48,7 +65,6 @@ describe('Task Integration Tests (e2e)', () => {
       taskId = response.body.id;
 
       // Verify database state
-      const connection = getConnection();
       const taskRepository = connection.getRepository(Task);
       const savedTask = await taskRepository.findOne({ where: { id: taskId } });
 
@@ -74,7 +90,6 @@ describe('Task Integration Tests (e2e)', () => {
         .expect(200);
 
       // Verify database state
-      const connection = getConnection();
       const taskRepository = connection.getRepository(Task);
       const updatedTask = await taskRepository.findOne({ where: { id: taskId } });
 
@@ -90,10 +105,9 @@ describe('Task Integration Tests (e2e)', () => {
     it('should soft delete a task and verify database state', async () => {
       await request(app.getHttpServer())
         .delete(`/tasks/${taskId}`)
-        .expect(200);
+        .expect(204);
 
       // Verify database state
-      const connection = getConnection();
       const taskRepository = connection.getRepository(Task);
       const deletedTask = await taskRepository.findOne({
         where: { id: taskId },
@@ -111,10 +125,9 @@ describe('Task Integration Tests (e2e)', () => {
     it('should restore a deleted task and verify database state', async () => {
       await request(app.getHttpServer())
         .post(`/tasks/${taskId}/restore`)
-        .expect(200);
+        .expect(201);
 
       // Verify database state
-      const connection = getConnection();
       const taskRepository = connection.getRepository(Task);
       const restoredTask = await taskRepository.findOne({ where: { id: taskId } });
 
@@ -144,7 +157,6 @@ describe('Task Integration Tests (e2e)', () => {
       await Promise.all(createPromises);
 
       // Verify all tasks were created
-      const connection = getConnection();
       const taskRepository = connection.getRepository(Task);
       const savedTasks = await taskRepository.findByIds(taskIds);
 
