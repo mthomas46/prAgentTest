@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsDateString, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { TaskPriority } from '../../entities/task.entity';
 
@@ -14,12 +14,12 @@ export class CreateTaskDto {
 
   @ApiProperty({ example: 'Buy groceries', description: 'The title of the task' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Title cannot be empty' })
   title: string;
 
   @ApiProperty({ example: 'Buy milk and bread', description: 'The description of the task' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Description cannot be empty' })
   description: string;
 
   @ApiProperty({
@@ -29,7 +29,7 @@ export class CreateTaskDto {
     required: false,
   })
   @IsOptional()
-  @IsEnum(TaskPriority)
+  @IsEnum(TaskPriority, { message: `Invalid priority value. Valid values are: ${Object.values(TaskPriority).join(', ')}` })
   priority?: TaskPriority;
 
   @ApiProperty({
@@ -38,6 +38,11 @@ export class CreateTaskDto {
     required: false,
   })
   @IsOptional()
-  @IsDateString()
+  @IsDateString({}, { message: 'Invalid date format. Please use ISO 8601 format (e.g., 2024-04-02T10:00:00Z)' })
   dueDate?: Date;
+
+  @ApiProperty({ example: false, description: 'Whether the task is completed' })
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
 }

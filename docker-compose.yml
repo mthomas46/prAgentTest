@@ -12,12 +12,33 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/api
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=api
     depends_on:
       - db
       - prometheus
       - grafana
-    command: npm run dev
+    command: npm run start:dev
+
+  avetta-doc-agent:
+    build:
+      context: .
+      target: avetta-doc-agent
+    ports:
+      - "3002:3002"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - WEBHOOK_SECRET=your-webhook-secret-here
+    depends_on:
+      - prometheus
+      - grafana
 
   db:
     image: postgres:16-alpine
@@ -31,7 +52,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.45.0
     ports:
       - "9090:9090"
     volumes:
@@ -44,13 +65,14 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.0.3
     ports:
       - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
 

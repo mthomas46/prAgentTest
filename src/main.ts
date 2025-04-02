@@ -5,15 +5,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as compression from 'compression';
-import { rateLimit } from 'express-rate-limit';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from './common/interceptors/timeout.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TaskPriority } from './entities/task.entity';
+import { LoggerService } from './common/services/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new LoggerService(),
+  });
   const configService = app.get(ConfigService);
   const appConfig = configService.get('app');
 
@@ -24,14 +26,6 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   });
-
-  // Rate limiting
-  app.use(
-    rateLimit({
-      windowMs: appConfig.rateLimit.windowMs,
-      max: appConfig.rateLimit.max,
-    }),
-  );
 
   // Compression
   app.use(compression());
@@ -70,12 +64,13 @@ async function bootstrap() {
   // API versioning
   app.enableVersioning({
     type: VersioningType.URI,
+    defaultVersion: '1',
   });
 
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Task Management API')
-    .setDescription('API for managing tasks')
+    .setDescription('API for managing tasks with priority levels and due dates')
     .setVersion('1.0')
     .addTag('tasks')
     .build();
@@ -83,11 +78,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  // Start the application
-  const port = appConfig.port || 3000;
+  // Start the server
+  const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation is available at: http://localhost:${port}/api`);
+  console.log(`Application is running on: http://[::1]:${port}`);
 }
 
 bootstrap();

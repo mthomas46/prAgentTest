@@ -17,64 +17,53 @@
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "type:check": "tsc --noEmit",
     "test": "jest",
-    "test:unit": "jest --testPathPattern='.*\\.spec\\.ts$' --testPathIgnorePatterns='test/integration/'",
-    "test:integration": "jest --testPathPattern='test/integration/.*\\.spec\\.ts$'",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:ci": "jest --ci --coverage --reporters=default --reporters=jest-junit",
-    "test:docker": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from api-test",
+    "test:docker": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit",
     "test:docker:clean": "docker-compose -f docker-compose.test.yml down -v",
     "prometheus:generate": "nest generate prometheus-metrics",
-    "prepare": "husky install",
-    "liquibase:update": "liquibase --defaultsFile=./liquibase.properties update",
-    "liquibase:rollback": "liquibase --defaultsFile=./liquibase.properties rollbackCount 1",
-    "liquibase:clearChecksums": "liquibase --defaultsFile=./liquibase.properties clearChecksums",
-    "test:e2e:integration": "jest --config ./test/jest-e2e.json --runInBand --detectOpenHandles"
+    "prepare": "husky install"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "10.4.15",
-    "@nestjs/platform-fastify": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.1.17",
     "@nestjs/terminus": "^10.0.1",
-    "@nestjs/typeorm": "^10.0.1",
-    "@types/compression": "^1.7.5",
-    "@types/express-rate-limit": "^6.0.2",
-    "@types/helmet": "^4.0.0",
+    "@nestjs/typeorm": "10.0.2",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "compression": "^1.7.4",
     "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
     "helmet": "^7.2.0",
-    "pg": "^8.11.3",
+    "pg": "8.14.1",
     "prom-client": "^15.1.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.17",
-    "winston": "^3.17.0"
+    "sqlite3": "5.1.7",
+    "typeorm": "0.3.21",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.0.0",
-    "@commitlint/config-conventional": "^19.0.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
-    "@types/express": "^4.17.21",
+    "@types/compression": "^1.7.5",
+    "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
-    "@types/supertest": "^2.0.16",
-    "@types/uuid": "10.0.0",
+    "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "dotenv": "^16.4.7",
@@ -85,21 +74,36 @@
     "jest": "^29.5.0",
     "jest-junit": "^16.0.0",
     "lint-staged": "^15.0.0",
-    "liquibase": "^4.4.0",
     "prettier": "^3.0.0",
     "source-map-support": "^0.5.21",
-    "supertest": "^6.3.4",
+    "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3",
-    "uuid": "11.1.0"
+    "typescript": "^5.1.3"
   },
   "lint-staged": {
     "*.ts": [
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }

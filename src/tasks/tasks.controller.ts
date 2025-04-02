@@ -2,13 +2,15 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   Query,
   HttpCode,
-  HttpStatus,
   Patch,
-  Delete,
+  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from '../entities/task.entity';
@@ -54,9 +56,16 @@ export class TasksController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: HttpStatus.CREATED, description: 'The task has been created', type: Task })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data' })
-  create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.tasksService.create(createTaskDto);
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data or duplicate ID' })
+  async create(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    try {
+      return await this.tasksService.create(createTaskDto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Patch(':id')
@@ -66,29 +75,34 @@ export class TasksController {
   @ApiResponse({ status: HttpStatus.OK, description: 'The task has been updated', type: Task })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found' })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid input data' })
-  update(@Param('id') id: string, @Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.tasksService.update(id, createTaskDto);
+  async update(@Param('id') id: string, @Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    try {
+      return await this.tasksService.update(id, createTaskDto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw error;
+    }
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete a task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'The task has been deleted', type: Task })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'The task has been deleted' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found' })
-  async remove(@Param('id') id: string): Promise<Task> {
-    const task = await this.tasksService.remove(id);
-    return task;
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.tasksService.remove(id);
   }
 
   @Post(':id/restore')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restore a soft-deleted task' })
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'The task has been restored', type: Task })
+  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'The task has been restored' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found' })
-  async restore(@Param('id') id: string): Promise<Task> {
-    const task = await this.tasksService.restore(id);
-    return task;
+  async restore(@Param('id') id: string): Promise<void> {
+    await this.tasksService.restore(id);
   }
 }

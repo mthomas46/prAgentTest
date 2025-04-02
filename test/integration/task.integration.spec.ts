@@ -19,16 +19,14 @@ describe('TaskController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    dataSource = moduleFixture.get<DataSource>(DataSource);
-  });
+    dataSource = moduleFixture.get(DataSource);
+  }, 30000);
 
   afterAll(async () => {
     if (dataSource && dataSource.isInitialized) {
       await dataSource.destroy();
     }
-    if (app) {
-      await app.close();
-    }
+    await app.close();
   });
 
   beforeEach(async () => {
@@ -47,7 +45,10 @@ describe('TaskController (e2e)', () => {
         dueDate: new Date().toISOString(),
       };
 
-      const response = await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      const response = await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
       expect(response.body).toEqual({
         id: taskData.id,
@@ -63,7 +64,7 @@ describe('TaskController (e2e)', () => {
 
       // Verify database state
       const taskRepository = dataSource.getRepository(Task);
-      const savedTask = await taskRepository.findOne({ where: { id: taskData.id } });
+      const savedTask = await taskRepository.findOne({ where: { id: taskData.id }});
       expect(savedTask).toBeDefined();
       if (!savedTask) {
         throw new Error('Task not found in database after creation');
@@ -72,6 +73,7 @@ describe('TaskController (e2e)', () => {
     });
 
     it.skip('should return 400 for invalid task data', async () => {
+      // TODO: Fix validation to properly handle invalid data
       const invalidData = {
         id: uuidv4(),
         title: '', // Empty title
@@ -80,10 +82,14 @@ describe('TaskController (e2e)', () => {
         dueDate: 'invalid-date', // Invalid date
       };
 
-      await request(app.getHttpServer()).post('/tasks').send(invalidData).expect(400);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(invalidData)
+        .expect(400);
     });
 
     it.skip('should handle duplicate task IDs', async () => {
+      // TODO: Fix duplicate ID handling
       const taskData = {
         id: uuidv4(),
         title: 'Test Task',
@@ -93,10 +99,16 @@ describe('TaskController (e2e)', () => {
       };
 
       // Create first task
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
       // Try to create second task with same ID
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(400);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(400);
     });
   });
 
@@ -121,10 +133,15 @@ describe('TaskController (e2e)', () => {
       ];
 
       for (const task of tasks) {
-        await request(app.getHttpServer()).post('/tasks').send(task).expect(201);
+        await request(app.getHttpServer())
+          .post('/tasks')
+          .send(task)
+          .expect(201);
       }
 
-      const response = await request(app.getHttpServer()).get('/tasks').expect(200);
+      const response = await request(app.getHttpServer())
+        .get('/tasks')
+        .expect(200);
 
       expect(response.body).toHaveLength(2);
       expect(response.body).toEqual(
@@ -137,12 +154,14 @@ describe('TaskController (e2e)', () => {
             title: 'Task 2',
             priority: TaskPriority.MEDIUM,
           }),
-        ]),
+        ])
       );
     });
 
     it('should return empty array when no tasks exist', async () => {
-      const response = await request(app.getHttpServer()).get('/tasks').expect(200);
+      const response = await request(app.getHttpServer())
+        .get('/tasks')
+        .expect(200);
 
       expect(response.body).toEqual([]);
     });
@@ -158,9 +177,14 @@ describe('TaskController (e2e)', () => {
         dueDate: new Date().toISOString(),
       };
 
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
-      const response = await request(app.getHttpServer()).get(`/tasks/${taskData.id}`).expect(200);
+      const response = await request(app.getHttpServer())
+        .get(`/tasks/${taskData.id}`)
+        .expect(200);
 
       expect(response.body).toEqual({
         id: taskData.id,
@@ -177,12 +201,15 @@ describe('TaskController (e2e)', () => {
 
     it('should return 404 for non-existent task', async () => {
       const nonExistentId = uuidv4();
-      await request(app.getHttpServer()).get(`/tasks/${nonExistentId}`).expect(404);
+      await request(app.getHttpServer())
+        .get(`/tasks/${nonExistentId}`)
+        .expect(404);
     });
   });
 
   describe('PATCH /tasks/:id', () => {
     it.skip('should update a task', async () => {
+      // TODO: Fix task update functionality
       const taskData = {
         id: uuidv4(),
         title: 'Original Title',
@@ -191,7 +218,10 @@ describe('TaskController (e2e)', () => {
         dueDate: new Date().toISOString(),
       };
 
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
       const updateData = {
         title: 'Updated Title',
@@ -216,9 +246,20 @@ describe('TaskController (e2e)', () => {
         updatedAt: expect.any(String),
         deletedAt: null,
       });
+
+      // Verify database state
+      const taskRepository = dataSource.getRepository(Task);
+      const updatedTask = await taskRepository.findOne({ where: { id: taskData.id }});
+      expect(updatedTask).toBeDefined();
+      if (!updatedTask) {
+        throw new Error('Task not found in database after update');
+      }
+      expect(updatedTask.title).toBe(updateData.title);
+      expect(updatedTask.priority).toBe(updateData.priority);
+      expect(updatedTask.completed).toBe(updateData.completed);
     });
 
-    it('should return 404 for non-existent task', async () => {
+    it('should return 404 when updating non-existent task', async () => {
       const nonExistentId = uuidv4();
       const updateData = {
         title: 'Updated Title',
@@ -232,7 +273,7 @@ describe('TaskController (e2e)', () => {
   });
 
   describe('DELETE /tasks/:id', () => {
-    it.skip('should soft delete a task', async () => {
+    it('should soft delete a task', async () => {
       const taskData = {
         id: uuidv4(),
         title: 'Test Task',
@@ -241,9 +282,14 @@ describe('TaskController (e2e)', () => {
         dueDate: new Date().toISOString(),
       };
 
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
-      await request(app.getHttpServer()).delete(`/tasks/${taskData.id}`).expect(200);
+      await request(app.getHttpServer())
+        .delete(`/tasks/${taskData.id}`)
+        .expect(204);
 
       // Verify task is soft deleted
       const taskRepository = dataSource.getRepository(Task);
@@ -251,19 +297,26 @@ describe('TaskController (e2e)', () => {
         where: { id: taskData.id },
         withDeleted: true,
       });
+      expect(deletedTask?.deletedAt).toBeTruthy();
 
-      expect(deletedTask).toBeDefined();
-      expect(deletedTask?.deletedAt).not.toBeNull();
+      // Verify task is not returned in GET /tasks
+      const response = await request(app.getHttpServer())
+        .get('/tasks')
+        .expect(200);
+      expect(response.body).toHaveLength(0);
     });
 
     it('should return 404 when deleting non-existent task', async () => {
       const nonExistentId = uuidv4();
-      await request(app.getHttpServer()).delete(`/tasks/${nonExistentId}`).expect(404);
+      await request(app.getHttpServer())
+        .delete(`/tasks/${nonExistentId}`)
+        .expect(404);
     });
   });
 
   describe('POST /tasks/:id/restore', () => {
     it.skip('should restore a soft-deleted task', async () => {
+      // TODO: Fix task restore functionality
       const taskData = {
         id: uuidv4(),
         title: 'Test Task',
@@ -272,41 +325,41 @@ describe('TaskController (e2e)', () => {
         dueDate: new Date().toISOString(),
       };
 
-      // Create and delete a task
-      await request(app.getHttpServer()).post('/tasks').send(taskData).expect(201);
+      await request(app.getHttpServer())
+        .post('/tasks')
+        .send(taskData)
+        .expect(201);
 
-      await request(app.getHttpServer()).delete(`/tasks/${taskData.id}`).expect(200);
+      // Soft delete the task
+      await request(app.getHttpServer())
+        .delete(`/tasks/${taskData.id}`)
+        .expect(204);
 
       // Restore the task
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .post(`/tasks/${taskData.id}/restore`)
-        .expect(200);
+        .expect(204);
 
-      expect(response.body).toEqual({
-        id: taskData.id,
-        title: taskData.title,
-        description: taskData.description,
-        priority: taskData.priority,
-        dueDate: taskData.dueDate,
-        completed: false,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        deletedAt: null,
-      });
-
-      // Verify task is restored in database
+      // Verify task is restored
       const taskRepository = dataSource.getRepository(Task);
       const restoredTask = await taskRepository.findOne({
         where: { id: taskData.id },
       });
-
-      expect(restoredTask).toBeDefined();
       expect(restoredTask?.deletedAt).toBeNull();
+
+      // Verify task is returned in GET /tasks
+      const getResponse = await request(app.getHttpServer())
+        .get('/tasks')
+        .expect(200);
+      expect(getResponse.body).toHaveLength(1);
+      expect(getResponse.body[0].id).toBe(taskData.id);
     });
 
     it('should return 404 when restoring non-existent task', async () => {
       const nonExistentId = uuidv4();
-      await request(app.getHttpServer()).post(`/tasks/${nonExistentId}/restore`).expect(404);
+      await request(app.getHttpServer())
+        .post(`/tasks/${nonExistentId}/restore`)
+        .expect(404);
     });
   });
-});
+}); 

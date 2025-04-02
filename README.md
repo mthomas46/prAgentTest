@@ -1,170 +1,67 @@
-# PR Agent Test API
+# AvettaDocAgent
 
-A modern NestJS-based REST API for task management with TypeScript, PostgreSQL, and Swagger documentation.
+A NestJS-based service for handling Avetta document webhooks and management.
 
-## Features
+## Description
 
-- 🚀 Built with NestJS and TypeScript
-- 📝 Task management with CRUD operations
-- 🔒 Security features (Helmet, CORS, Rate Limiting)
-- 📊 Health monitoring
-- 📚 Swagger documentation
-- 🗄️ PostgreSQL database with TypeORM
-- 🔄 Soft delete functionality
-- ⚡ Performance optimizations
-- 🛡️ Input validation
-- 📝 Request/Response logging
-- ⏱️ Request timeout handling
-- 📈 Metrics and monitoring (Prometheus, Grafana)
-- 🔍 System observability
-
-## Prerequisites
-
-- Node.js (v14 or higher)
-- PostgreSQL
-- Docker (optional, for running PostgreSQL)
+This service provides endpoints for:
+- Webhook processing for Avetta document events
+- Document management (create, update, delete)
+- Health checks and metrics
+- REST API for document operations
 
 ## Installation
 
-1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd pr-agent-test
+$ npm install
 ```
 
-2. Install dependencies:
+## Running the app
+
 ```bash
-npm install
+# development
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
 
-3. Create a PostgreSQL database:
+## Docker
+
 ```bash
-createdb pr_agent_test
+# Build and start containers
+$ docker-compose up -d --build
+
+# Stop containers
+$ docker-compose down
 ```
-
-4. Copy the environment file:
-```bash
-cp .env.example .env
-```
-
-5. Update the environment variables in `.env` if needed.
-
-## Running the Application
-
-Development mode:
-```bash
-npm run start:dev
-```
-
-Production mode:
-```bash
-npm run build
-npm run start:prod
-```
-
-## API Documentation
-
-Once the application is running, you can access the Swagger documentation at:
-```
-http://localhost:3000/api
-```
-
-## Monitoring & Metrics
-
-The application includes comprehensive monitoring and metrics collection using:
-- Prometheus for metrics collection
-- Grafana for metrics visualization
-- Custom application metrics
-- Node Exporter for system metrics
-
-For detailed information about the monitoring setup, usage, and best practices, see [DevOps Tooling Documentation](docs/devops-tooling.md).
-
-### Accessing Monitoring Tools
-
-- Metrics endpoint: http://localhost:3000/v1/metrics
-- Prometheus UI: http://localhost:9090
-- Grafana dashboards: http://localhost:3001
 
 ## API Endpoints
 
-### Tasks
+- `GET /health` - Health check endpoint
+- `GET /metrics` - Prometheus metrics endpoint
+- `POST /webhook` - Webhook endpoint for document events
+- `GET /documents` - List all documents
+- `GET /documents/:id` - Get a specific document
 
-- `GET /tasks` - Get all tasks
-- `GET /tasks/:id` - Get a specific task
-- `POST /tasks` - Create a new task
-- `PUT /tasks/:id` - Update a task
-- `DELETE /tasks/:id` - Soft delete a task
-- `POST /tasks/:id/restore` - Restore a soft-deleted task
+## Environment Variables
 
-### Health
-
-- `GET /health` - Check application health
+- `PORT` - Server port (default: 3002)
+- `WEBHOOK_SECRET` - Secret key for webhook signature verification
 
 ## Testing
 
-### Test Setup
-
-The project includes comprehensive testing capabilities with both unit tests and Docker-based integration tests.
-
-#### Running Tests
-
-1. **Standard Tests**
 ```bash
-npm run test              # Run all tests
-npm run test:watch       # Run tests in watch mode
-npm run test:cov        # Run tests with coverage
-npm run test:e2e        # Run end-to-end tests
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
 ```
-
-2. **Docker Tests**
-```bash
-npm run test:docker      # Run tests in Docker environment
-npm run test:docker:clean # Clean up Docker test containers and volumes
-```
-
-### Docker Test Environment
-
-The Docker test setup (`docker-compose.test.yml`) provides an isolated testing environment with:
-- Dedicated PostgreSQL test database
-- Automatic database initialization
-- Health checks for service readiness
-- Volume management for test data persistence
-
-#### Configuration
-
-- Test database runs on port 5433 (to avoid conflicts with development database)
-- Database credentials are configured in the Docker environment
-- Tests use TypeORM with automatic schema synchronization
-- Database is cleaned before each test run
-
-### Test Structure
-
-1. **Unit Tests**
-   - Service tests (`test/tasks/task.service.spec.ts`)
-   - Controller tests (`test/tasks/task.controller.spec.ts`)
-   - Entity tests (`test/database/task.entity.e2e-spec.ts`)
-
-2. **Integration Tests**
-   - Database integration tests
-   - API endpoint tests
-   - Error handling tests
-
-### CI/CD Integration
-
-The test suite is integrated with the CI/CD pipeline and includes:
-- Automated testing on pull requests
-- Coverage reporting
-- Test artifacts storage
-- Docker-based test execution
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+UNLICENSED

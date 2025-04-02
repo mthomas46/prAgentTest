@@ -47,30 +47,25 @@ export class Task {
   @IsBoolean()
   completed: boolean;
 
-  @ApiProperty({ example: '2024-04-02T10:00:00Z', description: 'The due date of the task' })
-  @Column({
-    type: 'enum',
-    enum: TaskPriority,
-    enumName: 'task_priority',
-    default: TaskPriority.MEDIUM,
-  })
+  @ApiProperty({ example: 'medium', description: 'The priority of the task', enum: TaskPriority })
+  @Column({ type: 'varchar', default: TaskPriority.MEDIUM })
   @IsEnum(TaskPriority)
   priority: TaskPriority;
 
   @ApiProperty({ example: '2024-04-02T10:00:00Z', description: 'The due date of the task' })
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   @IsOptional()
   @IsDate()
   dueDate: Date;
 
   @ApiProperty({ example: '2024-04-02T10:00:00Z', description: 'The creation date of the task' })
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'datetime' })
   createdAt: Date;
 
   @ApiProperty({ example: '2024-04-02T10:00:00Z', description: 'The last update date of the task' })
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'datetime' })
   updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'datetime' })
   deletedAt: Date;
 }
