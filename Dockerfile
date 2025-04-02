@@ -1,8 +1,7 @@
-# Use Node.js LTS (Long Term Support) version
-FROM node:20-slim
+# Build stage
+FROM node:20-alpine AS builder
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
@@ -13,11 +12,28 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build TypeScript code
+# Build application
 RUN npm run build
 
-# Expose the port the app runs on
-EXPOSE 8090
+# Production stage
+FROM node:20-alpine
 
-# Start the application
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+
+# Copy configuration files
+COPY .env* ./
+
+# Expose port
+EXPOSE 3000
+
+# Start application
 CMD ["npm", "start"] 
