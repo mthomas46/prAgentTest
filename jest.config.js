@@ -6,21 +6,32 @@ module.exports = {
     '^.+\\.(t|j)s$': ['ts-jest', {
       tsconfig: {
         allowJs: true,
-        target: 'es2022',
+        target: 'es2018',
+        moduleResolution: 'node',
+        esModuleInterop: true,
+        resolveJsonModule: true,
+      },
+      diagnostics: {
+        ignoreCodes: [151001],
       },
     }],
-    'node_modules/@nestjs/.*\\.js$': 'babel-jest',
-  },
-  collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: './coverage',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/test/', '<rootDir>/services/'],
-  moduleNameMapper: {
-    '^node:(.*)$': '<rootDir>/node_modules/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(?:@nestjs|@babel|typeorm|uuid|@typeorm/.*)/).*',
+    'node_modules/(?!(@nestjs|@babel|typeorm|uuid)/)',
   ],
-  moduleDirectories: ['node_modules'],
+  testEnvironment: 'node',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
+  globals: {
+    'ts-jest': {
+      isolatedModules: true,
+    },
+  },
+  setupFilesAfterEnv: ['<rootDir>/test/jest.setup.ts'],
+  moduleDirectories: ['node_modules', 'src'],
   testTimeout: 30000,
+  verbose: true,
+  detectOpenHandles: true,
+  forceExit: true,
 };

@@ -1,9 +1,70 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TaskController } from '../../services/task-service/src/task.controller';
 import { TaskService } from '../../services/task-service/src/task.service';
-import { Task } from '../../services/task-service/src/task.entity';
 import { NotFoundException } from '@nestjs/common';
-import { mockTask, mockCreateTaskDto } from '../mocks/task.entity.mock';
+import { TaskStatus, TaskPriority } from '../../shared/interfaces/task.interface';
+
+// Mock TypeORM
+jest.mock('typeorm', () => ({
+  Repository: jest.fn(),
+  Entity: jest.fn(),
+  PrimaryGeneratedColumn: jest.fn(),
+  Column: jest.fn(),
+  CreateDateColumn: jest.fn(),
+  UpdateDateColumn: jest.fn(),
+  DeleteDateColumn: jest.fn(),
+}));
+
+// Mock @nestjs/typeorm
+jest.mock('@nestjs/typeorm', () => ({
+  InjectRepository: () => jest.fn(),
+  TypeOrmModule: {
+    forFeature: jest.fn(),
+    forRoot: jest.fn(),
+  },
+}));
+
+// Simplified Task interface for testing
+interface TestTask {
+  id: string;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignedTo?: string;
+  dueDate?: Date;
+  metadata?: Record<string, any>;
+  completed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
+const mockTask: TestTask = {
+  id: '1',
+  title: 'Test Task',
+  description: 'Test Description',
+  status: TaskStatus.PENDING,
+  priority: TaskPriority.HIGH,
+  assignedTo: 'user1',
+  dueDate: new Date(),
+  metadata: {},
+  completed: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: undefined
+};
+
+const mockCreateTaskDto = {
+  title: 'Test Task',
+  description: 'Test Description',
+  status: TaskStatus.PENDING,
+  priority: TaskPriority.HIGH,
+  assignedTo: 'user1',
+  dueDate: new Date(),
+  metadata: {},
+  completed: false
+};
 
 describe('TaskController', () => {
   let controller: TaskController;
@@ -76,15 +137,25 @@ describe('TaskController', () => {
   });
 
   describe('update', () => {
-    it('should update an existing task', async () => {
-      const updatedTask = { ...mockTask, title: 'Updated Task' };
-      mockTaskService.update.mockResolvedValue(updatedTask);
+    it('should update a task', async () => {
+      const updateTaskDto = {
+        title: 'Updated Task',
+      };
+      const task = {
+        id: '1',
+        title: 'Updated Task',
+        status: TaskStatus.PENDING,
+        priority: TaskPriority.MEDIUM,
+        completed: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockTaskService.update.mockResolvedValue(task);
 
-      const result = await controller.update({ id: '1', updateTaskDto: { title: 'Updated Task' } });
-      expect(result).toEqual(updatedTask);
+      expect(await controller.update({ id: '1', updateTaskDto })).toBe(task);
     });
 
-    it('should throw NotFoundException when task to update is not found', async () => {
+    it('should throw NotFoundException when task not found', async () => {
       mockTaskService.update.mockRejectedValue(new NotFoundException());
 
       await expect(controller.update({ id: '1', updateTaskDto: { title: 'Updated Task' } })).rejects.toThrow(NotFoundException);
@@ -108,7 +179,7 @@ describe('TaskController', () => {
 
   describe('restore', () => {
     it('should restore a deleted task', async () => {
-      const restoredTask = { ...mockTask, deletedAt: null };
+      const restoredTask = { ...mockTask, deletedAt: undefined };
       mockTaskService.restore.mockResolvedValue(restoredTask);
 
       const result = await controller.restore('1');

@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskStatus } from '../dto/create-task.dto';
+import { TaskStatus } from '../../../../shared/interfaces/task.interface';
 
 @Entity('tasks')
 export class Task {
@@ -76,4 +76,12 @@ export class Task {
   })
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ApiProperty({
+    description: 'The timestamp when the task was deleted (null if not deleted)',
+    example: '2025-04-03T10:00:00Z',
+    nullable: true,
+  })
+  @DeleteDateColumn()
+  deletedAt: Date;
 } 

@@ -6,6 +6,30 @@ import { MetricsController } from './metrics.controller';
 import { MetricsService } from './metrics.service';
 import { jest, expect, describe, it } from '@jest/globals';
 
+// Mock the spinai module
+jest.mock('spinai', () => ({
+  createAgent: jest.fn(),
+  createActionsFromMcpConfig: jest.fn(),
+}));
+
+// Mock the openai module
+jest.mock('@ai-sdk/openai', () => ({
+  openai: {
+    chat: {
+      completions: {
+        create: jest.fn(),
+      },
+    },
+  },
+}));
+
+// Mock the mcp-config module
+jest.mock('../mcp-config.js', () => ({
+  default: {
+    actions: [],
+  },
+}));
+
 describe('AppModule', () => {
   let module: TestingModule;
 
