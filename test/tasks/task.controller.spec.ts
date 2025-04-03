@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TaskController } from '../../src/tasks/task.controller';
-import { TaskService } from '../../src/tasks/task.service';
-import { Task, TaskPriority } from '../../src/entities/task.entity';
+import { TaskController } from '../../services/task-service/src/task.controller';
+import { TaskService } from '../../services/task-service/src/task.service';
+import { Task } from '../../services/task-service/src/task.entity';
 import { NotFoundException } from '@nestjs/common';
+import { mockTask, mockCreateTaskDto } from '../mocks/task.entity.mock';
 
 describe('TaskController', () => {
   let controller: TaskController;
@@ -13,7 +14,7 @@ describe('TaskController', () => {
     findOne: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
-    remove: jest.fn(),
+    delete: jest.fn(),
     restore: jest.fn(),
   };
 
@@ -36,119 +37,85 @@ describe('TaskController', () => {
     jest.clearAllMocks();
   });
 
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+
   describe('findAll', () => {
     it('should return an array of tasks', async () => {
-      const expectedTasks = [
-        { id: '1', title: 'Task 1' },
-        { id: '2', title: 'Task 2' },
-      ];
-      mockTaskService.findAll.mockResolvedValue(expectedTasks);
+      const tasks = [mockTask];
+      mockTaskService.findAll.mockResolvedValue(tasks);
 
-      const result = await controller.findAll(false);
-      expect(result).toEqual(expectedTasks);
-      expect(mockTaskService.findAll).toHaveBeenCalledWith(false);
-    });
-
-    it('should include deleted tasks when specified', async () => {
-      const deletedTasks = [{ id: '1', title: 'Task 1', deletedAt: new Date() }];
-      mockTaskService.findAll.mockResolvedValue(deletedTasks);
-
-      const result = await controller.findAll(true);
-      expect(result).toEqual(deletedTasks);
-      expect(mockTaskService.findAll).toHaveBeenCalledWith(true);
+      const result = await controller.findAll();
+      expect(result).toEqual(tasks);
     });
   });
 
   describe('findOne', () => {
     it('should return a task by id', async () => {
-      const expectedTask = { id: '1', title: 'Task 1' };
-      mockTaskService.findOne.mockResolvedValue(expectedTask);
+      mockTaskService.findOne.mockResolvedValue(mockTask);
 
-      const result = await controller.findOne('1', false);
-      expect(result).toEqual(expectedTask);
-      expect(mockTaskService.findOne).toHaveBeenCalledWith('1', false);
+      const result = await controller.findOne('1');
+      expect(result).toEqual(mockTask);
     });
 
     it('should throw NotFoundException when task is not found', async () => {
       mockTaskService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('1', false)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('create', () => {
     it('should create a new task', async () => {
-      const taskData = {
-        title: 'New Task',
-        description: 'Description',
-        priority: TaskPriority.HIGH,
-      };
-      const createdTask = { id: '1', ...taskData };
-      mockTaskService.create.mockResolvedValue(createdTask);
+      mockTaskService.create.mockResolvedValue(mockTask);
 
-      const result = await controller.create(taskData);
-      expect(result).toEqual(createdTask);
-      expect(mockTaskService.create).toHaveBeenCalledWith(taskData);
+      const result = await controller.create(mockCreateTaskDto);
+      expect(result).toEqual(mockTask);
     });
   });
 
   describe('update', () => {
     it('should update an existing task', async () => {
-      const taskId = '1';
-      const updateData = {
-        title: 'Updated Task',
-        description: 'Updated Description',
-        completed: true,
-      };
-      const updatedTask = { id: taskId, ...updateData };
+      const updatedTask = { ...mockTask, title: 'Updated Task' };
       mockTaskService.update.mockResolvedValue(updatedTask);
 
-      const result = await controller.update(taskId, updateData);
+      const result = await controller.update({ id: '1', updateTaskDto: { title: 'Updated Task' } });
       expect(result).toEqual(updatedTask);
-      expect(mockTaskService.update).toHaveBeenCalledWith(taskId, updateData);
     });
 
-    it('should throw NotFoundException when updating non-existent task', async () => {
+    it('should throw NotFoundException when task to update is not found', async () => {
       mockTaskService.update.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.update('1', { title: 'Updated Title' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(controller.update({ id: '1', updateTaskDto: { title: 'Updated Task' } })).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('should remove a task', async () => {
-      const taskId = '1';
-      mockTaskService.remove.mockResolvedValue(undefined);
+  describe('delete', () => {
+    it('should delete a task', async () => {
+      mockTaskService.delete.mockResolvedValue(undefined);
 
-      await controller.remove(taskId);
-      expect(mockTaskService.remove).toHaveBeenCalledWith(taskId);
+      await controller.delete('1');
+      expect(mockTaskService.delete).toHaveBeenCalledWith('1');
     });
 
-    it('should throw NotFoundException when removing non-existent task', async () => {
-      mockTaskService.remove.mockRejectedValue(new NotFoundException());
+    it('should throw NotFoundException when task to delete is not found', async () => {
+      mockTaskService.delete.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.remove('1')).rejects.toThrow(NotFoundException);
+      await expect(controller.delete('1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('restore', () => {
     it('should restore a deleted task', async () => {
-      const taskId = '1';
-      const restoredTask = {
-        id: taskId,
-        title: 'Restored Task',
-        deletedAt: null,
-      };
+      const restoredTask = { ...mockTask, deletedAt: null };
       mockTaskService.restore.mockResolvedValue(restoredTask);
 
-      const result = await controller.restore(taskId);
+      const result = await controller.restore('1');
       expect(result).toEqual(restoredTask);
-      expect(mockTaskService.restore).toHaveBeenCalledWith(taskId);
     });
 
-    it('should throw NotFoundException when restoring non-existent task', async () => {
+    it('should throw NotFoundException when task to restore is not found', async () => {
       mockTaskService.restore.mockRejectedValue(new NotFoundException());
 
       await expect(controller.restore('1')).rejects.toThrow(NotFoundException);

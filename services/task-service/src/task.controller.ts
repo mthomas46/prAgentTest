@@ -1,15 +1,14 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TaskService } from './task.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { ICreateTaskDto, IUpdateTaskDto } from '../../../shared/interfaces/task.interface';
 
 @Controller()
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @MessagePattern({ cmd: 'createTask' })
-  async create(@Payload() createTaskDto: CreateTaskDto) {
+  async create(@Payload() createTaskDto: ICreateTaskDto) {
     return await this.taskService.create(createTaskDto);
   }
 
@@ -24,12 +23,17 @@ export class TaskController {
   }
 
   @MessagePattern({ cmd: 'updateTask' })
-  async update(@Payload() payload: { id: string; updateTaskDto: UpdateTaskDto }) {
+  async update(@Payload() payload: { id: string; updateTaskDto: IUpdateTaskDto }) {
     return await this.taskService.update(payload.id, payload.updateTaskDto);
   }
 
-  @MessagePattern({ cmd: 'removeTask' })
-  async remove(@Payload() id: string) {
-    return await this.taskService.remove(id);
+  @MessagePattern({ cmd: 'deleteTask' })
+  async delete(@Payload() id: string) {
+    return await this.taskService.delete(id);
+  }
+
+  @MessagePattern({ cmd: 'restoreTask' })
+  async restore(@Payload() id: string) {
+    return await this.taskService.restore(id);
   }
 } 

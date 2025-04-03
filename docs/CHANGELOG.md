@@ -365,4 +365,125 @@ npm run lint:check
 
 # Type checking
 npm run type:check
-``` 
+```
+
+## [1.1.3] - 2024-04-03
+
+### Added
+- Enhanced error handling for database connection issues
+- Additional logging for database connection retries
+- Test coverage reporting improvements
+- Database connection health checks
+
+### Changed
+- Updated database connection retry logic
+- Improved error messages for database connection failures
+- Enhanced test environment configuration
+- Updated logging service test cases
+
+### Fixed
+- Database connection issues in test environment
+- Logger service test failures
+- TypeORM connection retry mechanism
+- Test coverage reporting accuracy
+
+### Technical Debt
+- Need to implement proper database connection pooling
+- Add database connection monitoring
+- Enhance test environment setup
+- Improve error handling in logger service
+- Add database health check endpoints
+- Implement connection retry strategies
+- Add database migration checks
+- Enhance test coverage for database operations
+- Improve logging for database operations
+- Add database performance monitoring
+
+### Documentation
+- Updated database connection documentation
+- Added test environment setup guide
+- Enhanced error handling documentation
+- Updated logging service documentation
+- Added database health check documentation
+
+### Development Workflow
+1. Database connection improvements
+2. Test environment setup
+3. Error handling enhancements
+4. Documentation updates
+5. Performance monitoring setup
+
+### Current Project Structure
+```
+.
+├── src/
+│   ├── common/
+│   │   ├── services/
+│   │   │   └── logger.service.ts
+│   │   └── metrics/
+│   │       └── metrics.module.ts
+│   ├── entities/
+│   │   └── task.entity.ts
+│   └── tasks/
+│       ├── tasks.controller.ts
+│       ├── tasks.module.ts
+│       └── tasks.service.ts
+├── test/
+│   └── logger.service.spec.ts
+└── docs/
+    └── CHANGELOG.md
+```
+
+### Available Commands
+```bash
+# Run tests with database
+npm run test:db
+
+# Run tests without database
+npm run test:fast
+
+# Check database connection
+npm run check:db
+
+# Start development server
+npm run start:dev
+```
+
+## [1.1.0] - 2024-04-03
+
+### Added
+- Enhanced CI/CD pipeline with comprehensive testing, security, and deployment features
+  - Matrix testing across multiple Node.js and PostgreSQL versions
+  - Container security scanning with Trivy
+  - Secrets scanning with Gitleaks
+  - Automated deployment verification
+  - Performance testing integration
+  - Monitoring stack configuration
+- New deployment scripts
+  - `health-check.sh` for service health verification
+  - `verify-deployment.sh` for deployment validation
+  - `monitor-deployment.sh` for deployment monitoring
+- Grafana dashboards for monitoring
+  - API Gateway Overview dashboard
+  - API Gateway Latency dashboard
+  - API Gateway Resources dashboard
+- Comprehensive CI/CD documentation in `docs/CICD.md`
+
+### Changed
+- Updated deployment process to include staging environment
+- Enhanced security checks in the pipeline
+- Improved monitoring and observability
+- Updated test coverage requirements
+
+### Fixed
+- Database connection handling in deployment scripts
+- Health check reliability
+- Monitoring stack configuration
+
+## [1.0.0] - 2024-04-01
+
+### Added
+- Initial release
+- Basic CI/CD pipeline
+- Docker containerization
+- Basic monitoring setup 

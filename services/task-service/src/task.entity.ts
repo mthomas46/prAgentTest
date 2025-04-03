@@ -1,5 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { ITask, TaskStatus } from '../../../shared/interfaces/task.interface';
+
+export enum TaskPriority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high'
+}
 
 @Entity('tasks')
 export class Task implements ITask {
@@ -19,6 +25,13 @@ export class Task implements ITask {
   })
   status: TaskStatus;
 
+  @Column({
+    type: 'enum',
+    enum: TaskPriority,
+    default: TaskPriority.MEDIUM
+  })
+  priority: TaskPriority;
+
   @Column({ nullable: true })
   assignedTo?: string;
 
@@ -36,4 +49,7 @@ export class Task implements ITask {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 } 

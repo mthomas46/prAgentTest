@@ -71,4 +71,9 @@ export class EventPublisherService {
 
     await this.publishEvent(type, eventData, 'task-service');
   }
+
+  async publish(eventType: string, data: any): Promise<void> {
+    // Implementation will be added later
+    console.log(`Publishing event: ${eventType}`, data);
+  }
 } 

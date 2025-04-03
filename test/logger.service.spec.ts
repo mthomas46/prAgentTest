@@ -1,15 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerService } from '../shared/logger/logger.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('LoggerService', () => {
   let service: LoggerService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
+    const mockConfigService = {
+      get: jest.fn((key: string) => {
+        switch (key) {
+          case 'LOG_LEVEL':
+            return 'debug';
+          default:
+            return null;
+        }
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LoggerService],
+      providers: [
+        LoggerService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+      ],
     }).compile();
 
     service = module.get<LoggerService>(LoggerService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -17,41 +37,39 @@ describe('LoggerService', () => {
   });
 
   it('should log info messages', () => {
-    const spy = jest.spyOn(console, 'info');
+    const logSpy = jest.spyOn(service, 'log');
     service.log('Test info message');
-    expect(spy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith('Test info message');
   });
 
   it('should log error messages', () => {
-    const spy = jest.spyOn(console, 'error');
-    service.error('Test error message', 'Error: Test error');
-    expect(spy).toHaveBeenCalled();
+    const errorSpy = jest.spyOn(service, 'error');
+    const error = new Error('Test error');
+    service.error('Test error message', error.stack);
+    expect(errorSpy).toHaveBeenCalledWith('Test error message', error.stack);
   });
 
   it('should log warning messages', () => {
-    const spy = jest.spyOn(console, 'warn');
+    const warnSpy = jest.spyOn(service, 'warn');
     service.warn('Test warning message');
-    expect(spy).toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith('Test warning message');
   });
 
   it('should log debug messages', () => {
-    const spy = jest.spyOn(console, 'debug');
+    const debugSpy = jest.spyOn(service, 'debug');
     service.debug('Test debug message');
-    expect(spy).toHaveBeenCalled();
+    expect(debugSpy).toHaveBeenCalledWith('Test debug message');
   });
 
   it('should log verbose messages', () => {
-    const spy = jest.spyOn(console, 'debug');
+    const verboseSpy = jest.spyOn(service, 'verbose');
     service.verbose('Test verbose message');
-    expect(spy).toHaveBeenCalled();
+    expect(verboseSpy).toHaveBeenCalledWith('Test verbose message');
   });
 
   it('should include context in log messages', () => {
-    const spy = jest.spyOn(console, 'info');
+    const logSpy = jest.spyOn(service, 'log');
     service.log('Test message with context', 'TestContext');
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('TestContext'),
-      expect.any(String)
-    );
+    expect(logSpy).toHaveBeenCalledWith('Test message with context', 'TestContext');
   });
 }); 

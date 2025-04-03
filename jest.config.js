@@ -1,19 +1,26 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+  moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: '.',
+  testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
-    '^.+\\.jsx?$': 'babel-jest',
+    '^.+\\.(t|j)s$': ['ts-jest', {
+      tsconfig: {
+        allowJs: true,
+        target: 'es2022',
+      },
+    }],
+    'node_modules/@nestjs/.*\\.js$': 'babel-jest',
+  },
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coverageDirectory: './coverage',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/test/', '<rootDir>/services/'],
+  moduleNameMapper: {
+    '^node:(.*)$': '<rootDir>/node_modules/$1',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(?:@nestjs|@babel)/)',
+    'node_modules/(?!(?:@nestjs|@babel|typeorm|uuid|@typeorm/.*)/).*',
   ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  testMatch: ['**/test/**/*.spec.ts', '**/test/**/*.test.ts'],
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
-}; 
+  moduleDirectories: ['node_modules'],
+  testTimeout: 30000,
+};
