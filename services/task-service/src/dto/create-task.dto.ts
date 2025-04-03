@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, IsBoolean, IsDate, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean, IsDate, Min, Max, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { TaskStatus } from '../enums/task-status.enum';
+import { TaskPriority } from '../enums/task-priority.enum';
 
 export class CreateTaskDto {
   @ApiProperty({
@@ -19,29 +21,23 @@ export class CreateTaskDto {
 
   @ApiProperty({
     description: 'The status of the task',
-    example: 0,
-    minimum: 0,
-    maximum: 4,
+    enum: TaskStatus,
+    example: TaskStatus.PENDING,
     required: false,
   })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(4)
-  status?: number;
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
 
   @ApiProperty({
     description: 'The priority of the task',
-    example: 1,
-    minimum: 0,
-    maximum: 3,
+    enum: TaskPriority,
+    example: TaskPriority.MEDIUM,
     required: false,
   })
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(3)
-  priority?: number;
+  @IsEnum(TaskPriority)
+  priority?: TaskPriority;
 
   @ApiProperty({
     description: 'Whether the task is completed',

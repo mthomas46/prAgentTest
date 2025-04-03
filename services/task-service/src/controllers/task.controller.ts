@@ -5,6 +5,7 @@ import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
 import { Task } from '../entities/task.entity';
 import { TaskStatus } from '../enums/task-status.enum';
+import { TaskStatusValidationPipe } from '../pipes/task-status-validation.pipe';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -74,7 +75,7 @@ export class TaskController {
   @Get('status/:status')
   @ApiOperation({ summary: 'Get tasks by status' })
   @ApiResponse({ status: 200, description: 'Return tasks by status', type: [Task] })
-  getTasksByStatus(@Param('status', ParseIntPipe) status: TaskStatus): Promise<Task[]> {
+  getTasksByStatus(@Param('status', TaskStatusValidationPipe) status: TaskStatus): Promise<Task[]> {
     return this.taskService.getTasksByStatus(status);
   }
 } 
