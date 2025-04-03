@@ -1,15 +1,16 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskStatus } from '../../../../shared/enums/task-status.enum';
+import { TaskStatus } from '../enums/task-status.enum';
+import { TaskPriority } from '../enums/task-priority.enum';
 
-@Entity('task')
+@Entity('tasks')
 export class Task {
   @ApiProperty({
     description: 'The unique identifier of the task',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ApiProperty({
     description: 'The title of the task',
@@ -24,7 +25,7 @@ export class Task {
     nullable: true,
   })
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: 'The current status of the task',
@@ -40,12 +41,33 @@ export class Task {
   status: TaskStatus;
 
   @ApiProperty({
+    description: 'The priority level of the task',
+    enum: TaskPriority,
+    example: TaskPriority.MEDIUM,
+    default: TaskPriority.MEDIUM,
+  })
+  @Column({
+    type: 'enum',
+    enum: TaskPriority,
+    default: TaskPriority.MEDIUM
+  })
+  priority: TaskPriority;
+
+  @ApiProperty({
+    description: 'Whether the task is completed',
+    example: false,
+    default: false,
+  })
+  @Column({ default: false })
+  completed: boolean;
+
+  @ApiProperty({
     description: 'The UUID of the user assigned to this task',
     example: '123e4567-e89b-12d3-a456-426614174000',
     nullable: true,
   })
   @Column({ nullable: true })
-  assignedTo: string;
+  assignedTo?: string;
 
   @ApiProperty({
     description: 'The due date for the task',
@@ -53,39 +75,38 @@ export class Task {
     nullable: true,
   })
   @Column({ type: 'timestamp', nullable: true })
-  dueDate: Date;
+  dueDate?: Date;
 
   @ApiProperty({
     description: 'Additional metadata for the task',
     example: {
-      priority: 'high',
       estimatedHours: 8,
       tags: ['backend', 'security']
     },
     nullable: true,
   })
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>;
+  @Column('jsonb', { nullable: true })
+  metadata?: Record<string, any>;
 
   @ApiProperty({
-    description: 'The timestamp when the task was created',
-    example: '2025-04-03T09:00:00Z',
+    description: 'The creation date of the task',
+    example: '2025-01-01T00:00:00Z',
   })
   @CreateDateColumn()
   createdAt: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the task was last updated',
-    example: '2025-04-03T09:30:00Z',
+    description: 'The last update date of the task',
+    example: '2025-01-01T00:00:00Z',
   })
   @UpdateDateColumn()
   updatedAt: Date;
 
   @ApiProperty({
-    description: 'The timestamp when the task was deleted (null if not deleted)',
-    example: '2025-04-03T10:00:00Z',
+    description: 'The deletion date of the task',
+    example: '2025-01-01T00:00:00Z',
     nullable: true,
   })
-  @DeleteDateColumn()
-  deletedAt: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
 } 

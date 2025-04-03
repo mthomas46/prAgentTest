@@ -1,66 +1,47 @@
-import { IsString, IsOptional, IsDate, IsUUID, IsObject, IsEnum, IsBoolean } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ICreateTaskDto, TaskStatus } from '../../../../shared/interfaces/task.interface';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsEnum, IsDate, IsBoolean, IsObject } from 'class-validator';
+import { Type } from 'class-transformer';
+import { TaskStatus } from '../enums/task-status.enum';
+import { TaskPriority } from '../enums/task-priority.enum';
 
-export class CreateTaskDto implements ICreateTaskDto {
-  @ApiProperty({
-    description: 'The title of the task',
-    example: 'Implement user authentication',
-  })
+export class CreateTaskDto {
+  @ApiProperty({ description: 'The title of the task' })
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({
-    description: 'A detailed description of the task',
-    example: 'Implement JWT-based authentication with refresh tokens',
-  })
+  @ApiProperty({ description: 'The description of the task', required: false })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({
-    description: 'The current status of the task',
-    enum: TaskStatus,
-    example: TaskStatus.PENDING,
-    default: TaskStatus.PENDING,
-  })
+  @ApiProperty({ description: 'The status of the task', enum: TaskStatus, default: TaskStatus.PENDING })
   @IsEnum(TaskStatus)
   @IsOptional()
-  status?: TaskStatus;
+  status?: TaskStatus = TaskStatus.PENDING;
 
-  @ApiPropertyOptional({
-    description: 'The UUID of the user assigned to this task',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @IsUUID()
+  @ApiProperty({ description: 'The priority of the task', enum: TaskPriority, default: TaskPriority.MEDIUM })
+  @IsEnum(TaskPriority)
+  @IsOptional()
+  priority?: TaskPriority = TaskPriority.MEDIUM;
+
+  @ApiProperty({ description: 'The ID of the user assigned to the task', required: false })
+  @IsString()
   @IsOptional()
   assignedTo?: string;
 
-  @ApiPropertyOptional({
-    description: 'The due date for the task',
-    example: '2025-12-31T23:59:59Z',
-  })
+  @ApiProperty({ description: 'The due date of the task', required: false })
+  @Type(() => Date)
   @IsDate()
   @IsOptional()
   dueDate?: Date;
 
-  @ApiPropertyOptional({
-    description: 'Additional metadata for the task',
-    example: {
-      priority: 'high',
-      estimatedHours: 8,
-      tags: ['backend', 'security']
-    },
-  })
+  @ApiProperty({ description: 'Additional metadata for the task', required: false })
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
 
-  @ApiPropertyOptional({
-    description: 'Whether the task is completed',
-    default: false,
-  })
+  @ApiProperty({ description: 'Whether the task is completed', default: false })
   @IsBoolean()
   @IsOptional()
-  completed?: boolean;
+  completed?: boolean = false;
 } 
