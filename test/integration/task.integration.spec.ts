@@ -1,15 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { DataSource } from 'typeorm';
 import { Task } from '../../src/entities/task.entity';
 import { v4 as uuidv4 } from 'uuid';
 import { TaskPriority } from '../../src/entities/task.entity';
+import { Repository } from 'typeorm';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 describe('TaskController (e2e)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
+  let taskRepository: Repository<Task>;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,6 +23,7 @@ describe('TaskController (e2e)', () => {
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
+    taskRepository = moduleFixture.get<Repository<Task>>(getRepositoryToken(Task));
   }, 30000);
 
   afterAll(async () => {
@@ -31,7 +35,6 @@ describe('TaskController (e2e)', () => {
 
   beforeEach(async () => {
     // Clear the tasks table before each test
-    const taskRepository = dataSource.getRepository(Task);
     await taskRepository.clear();
   });
 
@@ -63,7 +66,6 @@ describe('TaskController (e2e)', () => {
       });
 
       // Verify database state
-      const taskRepository = dataSource.getRepository(Task);
       const savedTask = await taskRepository.findOne({ where: { id: taskData.id }});
       expect(savedTask).toBeDefined();
       if (!savedTask) {
@@ -248,7 +250,6 @@ describe('TaskController (e2e)', () => {
       });
 
       // Verify database state
-      const taskRepository = dataSource.getRepository(Task);
       const updatedTask = await taskRepository.findOne({ where: { id: taskData.id }});
       expect(updatedTask).toBeDefined();
       if (!updatedTask) {
@@ -292,7 +293,6 @@ describe('TaskController (e2e)', () => {
         .expect(204);
 
       // Verify task is soft deleted
-      const taskRepository = dataSource.getRepository(Task);
       const deletedTask = await taskRepository.findOne({
         where: { id: taskData.id },
         withDeleted: true,
@@ -341,7 +341,6 @@ describe('TaskController (e2e)', () => {
         .expect(204);
 
       // Verify task is restored
-      const taskRepository = dataSource.getRepository(Task);
       const restoredTask = await taskRepository.findOne({
         where: { id: taskData.id },
       });
@@ -360,6 +359,112 @@ describe('TaskController (e2e)', () => {
       await request(app.getHttpServer())
         .post(`/tasks/${nonExistentId}/restore`)
         .expect(404);
+    });
+  });
+});
+
+describe('Task Integration Tests', () => {
+  let app: INestApplication;
+  let taskRepository: Repository<Task>;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    taskRepository = moduleFixture.get<Repository<Task>>(getRepositoryToken(Task));
+    await app.init();
+  });
+
+  afterEach(async () => {
+    await taskRepository.clear();
+    await app.close();
+  });
+
+  describe('Task CRUD Operations', () => {
+    it('should create a task', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/tasks')
+        .send({
+          title: 'Integration Test Task',
+          description: 'Test Description',
+          priority: TaskPriority.MEDIUM,
+        })
+        .expect(201);
+
+      expect(response.body.title).toBe('Integration Test Task');
+      expect(response.body.description).toBe('Test Description');
+      expect(response.body.priority).toBe(TaskPriority.MEDIUM);
+    });
+
+    it('should get all tasks', async () => {
+      const task = await taskRepository.save({
+        title: 'Test Task',
+        description: 'Test Description',
+        priority: TaskPriority.MEDIUM,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get('/tasks')
+        .expect(200);
+
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body[0].title).toBe('Test Task');
+    });
+
+    it('should get a task by id', async () => {
+      const task = await taskRepository.save({
+        title: 'Test Task',
+        description: 'Test Description',
+        priority: TaskPriority.MEDIUM,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get(`/tasks/${task.id}`)
+        .expect(200);
+
+      expect(response.body.id).toBe(task.id);
+      expect(response.body.title).toBe('Test Task');
+    });
+
+    it('should update a task', async () => {
+      const task = await taskRepository.save({
+        title: 'Test Task',
+        description: 'Test Description',
+        priority: TaskPriority.MEDIUM,
+      });
+
+      const response = await request(app.getHttpServer())
+        .put(`/tasks/${task.id}`)
+        .send({
+          title: 'Updated Task',
+          description: 'Updated Description',
+          priority: TaskPriority.HIGH,
+        })
+        .expect(200);
+
+      expect(response.body.id).toBe(task.id);
+      expect(response.body.title).toBe('Updated Task');
+      expect(response.body.description).toBe('Updated Description');
+      expect(response.body.priority).toBe(TaskPriority.HIGH);
+    });
+
+    it('should delete a task', async () => {
+      const task = await taskRepository.save({
+        title: 'Test Task',
+        description: 'Test Description',
+        priority: TaskPriority.MEDIUM,
+      });
+
+      await request(app.getHttpServer())
+        .delete(`/tasks/${task.id}`)
+        .expect(200);
+
+      const found = await taskRepository.findOne({
+        where: { id: task.id },
+      });
+      expect(found).toBeNull();
     });
   });
 }); 

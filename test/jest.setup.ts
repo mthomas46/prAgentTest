@@ -15,13 +15,17 @@ beforeAll(async () => {
   // Only initialize database if DB_ENABLED is true
   if (process.env.DB_ENABLED === 'true') {
     dataSource = new DataSource({
-      type: 'sqlite',
-      database: ':memory:',
-      dropSchema: true,
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      username: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || 'postgres',
+      database: process.env.DB_DATABASE || 'api_test',
       entities: ['src/**/*.entity{.ts,.js}'],
       synchronize: true,
+      dropSchema: true,
       logging: false,
-    });
+    } as any);
     await dataSource.initialize();
   }
 
@@ -56,15 +60,15 @@ beforeAll(async () => {
     }),
   );
 
+  // Global filters
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   // Global interceptors
   app.useGlobalInterceptors(
     new TransformInterceptor(),
     new LoggingInterceptor(),
     new TimeoutInterceptor(),
   );
-
-  // Global filters
-  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.init();
 });
@@ -73,7 +77,5 @@ afterAll(async () => {
   if (dataSource) {
     await dataSource.destroy();
   }
-  if (app) {
-    await app.close();
-  }
+  await app.close();
 });
