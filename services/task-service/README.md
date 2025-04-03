@@ -1,20 +1,21 @@
 # Task Service
 
-A microservice for managing tasks in a distributed system.
+A NestJS-based microservice for managing tasks.
 
 ## Features
 
 - Create, read, update, and delete tasks
-- Assign tasks to users
-- Mark tasks as completed
-- Filter tasks by status and assignee
-- Swagger API documentation
+- Soft delete and restore tasks
+- PostgreSQL database integration
+- RESTful API endpoints
+- TypeORM for database operations
+- Docker support for containerization
 
 ## Prerequisites
 
-- Node.js 18+
-- Docker and Docker Compose
-- PostgreSQL 16+
+- Node.js 18 or later
+- PostgreSQL 14 or later
+- Docker and Docker Compose (optional)
 
 ## Installation
 
@@ -23,29 +24,40 @@ A microservice for managing tasks in a distributed system.
    ```bash
    npm install
    ```
-3. Create a `.env` file based on `.env.example`
-4. Start the service:
-   ```bash
-   # Development
-   npm run start:dev
 
-   # Production
-   npm run start:prod
-   ```
+## Configuration
 
-## Docker
+Create a `.env` file in the root directory with the following variables:
 
-Build and run the service using Docker:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=task_service
+NODE_ENV=development
+PORT=3000
+```
+
+## Running the Application
+
+### Development
+
+```bash
+npm run start:dev
+```
+
+### Production
+
+```bash
+npm run build
+npm run start:prod
+```
+
+### Docker
 
 ```bash
 docker-compose up --build
-```
-
-## API Documentation
-
-Once the service is running, access the Swagger documentation at:
-```
-http://localhost:3002/api
 ```
 
 ## API Endpoints
@@ -55,18 +67,16 @@ http://localhost:3002/api
 - `GET /tasks/:id` - Get a task by ID
 - `PUT /tasks/:id` - Update a task
 - `DELETE /tasks/:id` - Delete a task
-- `PUT /tasks/:id/complete` - Mark a task as completed
-- `PUT /tasks/:id/assign` - Assign a task to a user
-- `GET /tasks/status/:status` - Get tasks by status
-- `GET /tasks/assignee/:userId` - Get tasks by assignee
+- `POST /tasks/:id/restore` - Restore a deleted task
 
 ## Testing
 
-Run tests:
 ```bash
-npm test
+npm run test
+npm run test:watch
+npm run test:cov
 ```
 
 ## License
 
-MIT 
+This project is licensed under the UNLICENSED License. 

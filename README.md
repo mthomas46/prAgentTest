@@ -343,3 +343,106 @@ Features:
 - Export/Import functionality
 
 Note: The database file is mounted from the `./data` directory. Make sure this directory exists and has proper permissions.
+
+# Task Service
+
+A simple task management service built with Node.js, Express, and PostgreSQL.
+
+## Features
+
+- Create, read, update, and delete tasks
+- Mark tasks as completed
+- Assign tasks to users
+- Soft deletion of tasks
+- RESTful API
+
+## Prerequisites
+
+- Node.js 18 or higher
+- PostgreSQL 12 or higher
+
+## Installation
+
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd task-service
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Create a `.env` file in the root directory with the following variables:
+   ```
+   PORT=3000
+   NODE_ENV=development
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=postgres
+   DB_PASSWORD=postgres
+   DB_NAME=task_service
+   LOG_LEVEL=info
+   ```
+
+4. Create the database:
+   ```
+   createdb task_service
+   ```
+
+## Running the Application
+
+### Development Mode
+
+```
+npm run dev
+```
+
+### Production Mode
+
+```
+npm run build
+npm start
+```
+
+## API Endpoints
+
+### Tasks
+
+- `POST /api/tasks` - Create a new task
+- `GET /api/tasks` - Get all tasks
+- `GET /api/tasks/:id` - Get a task by ID
+- `PUT /api/tasks/:id` - Update a task
+- `DELETE /api/tasks/:id` - Delete a task
+- `PATCH /api/tasks/:id/complete` - Mark a task as completed
+- `PATCH /api/tasks/:id/assign` - Assign a task to a user
+
+### Health Check
+
+- `GET /health` - Check if the service is running
+
+## Task Properties
+
+- `id` - Unique identifier (auto-generated)
+- `title` - Task title (required)
+- `description` - Task description (optional)
+- `status` - Task status (default: 'pending')
+- `priority` - Task priority (default: 'medium')
+- `completed` - Whether the task is completed (default: false)
+- `assignedTo` - User ID of the assignee (optional)
+- `dueDate` - Due date of the task (optional)
+- `metadata` - Additional task metadata (optional)
+- `createdAt` - Creation timestamp (auto-generated)
+- `updatedAt` - Last update timestamp (auto-generated)
+- `deletedAt` - Deletion timestamp (null if not deleted)
+
+## Testing
+
+```
+npm test
+```
+
+## License
+
+MIT

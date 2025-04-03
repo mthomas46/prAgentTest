@@ -4,31 +4,19 @@ services:
   task-service:
     build: .
     ports:
-      - "3002:3002"
+      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - PORT=3002
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - DB_DATABASE=task_service
-      - DB_SYNCHRONIZE=true
-      - DB_LOGGING=true
+      - DB_NAME=task_service
+      - NODE_ENV=development
     depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
-    networks:
-      - microservices-network
+      - postgres
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:14-alpine
     ports:
       - "5432:5432"
     environment:
@@ -37,13 +25,6 @@ services:
       - POSTGRES_DB=task_service
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices-network
 
 volumes:
   postgres_data:

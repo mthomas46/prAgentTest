@@ -8,16 +8,17 @@ NC='\033[0m'
 # Function to test an endpoint
 test_endpoint() {
     local service=$1
-    local endpoint=$2
-    local method=${3:-GET}
-    local data=$4
+    local port=$2
+    local endpoint=$3
+    local method=${4:-GET}
+    local data=$5
 
     echo -e "\nTesting ${service} - ${method} ${endpoint}"
     
     if [ "$method" = "GET" ]; then
-        response=$(curl -s -w "\n%{http_code}" -X $method "http://localhost:3002$endpoint")
+        response=$(curl -s -w "\n%{http_code}" -X $method "http://localhost:${port}${endpoint}")
     else
-        response=$(curl -s -w "\n%{http_code}" -X $method "http://localhost:3002$endpoint" -H "Content-Type: application/json" -d "$data")
+        response=$(curl -s -w "\n%{http_code}" -X $method "http://localhost:${port}${endpoint}" -H "Content-Type: application/json" -d "$data")
     fi
 
     status_code=$(echo "$response" | tail -n1)
@@ -32,33 +33,34 @@ test_endpoint() {
     fi
 }
 
-echo "Testing API Gateway Endpoints..."
+echo "Testing Service Endpoints..."
 
 # Task Service Endpoints
 echo -e "\n=== Task Service ==="
-test_endpoint "Task" "/tasks" "POST" '{"title":"Test Task","description":"Testing task creation","priority":"medium"}'
-test_endpoint "Task" "/tasks"
-test_endpoint "Task" "/tasks/health"
+test_endpoint "Task Service" "3000" "/tasks" "POST" '{"title":"Test Task","description":"Testing task creation","priority":"medium"}'
+test_endpoint "Task Service" "3000" "/tasks"
+test_endpoint "Task Service" "3000" "/health"
 
-# Document Service Endpoints
-echo -e "\n=== Document Service ==="
-test_endpoint "Document" "/documents" "POST" '{"name":"Test Document","content":"Test content"}'
-test_endpoint "Document" "/documents"
-test_endpoint "Document" "/documents/health"
+# API Gateway Endpoints
+echo -e "\n=== API Gateway ==="
+test_endpoint "API Gateway" "3001" "/health"
 
-# Webhook Service Endpoints
-echo -e "\n=== Webhook Service ==="
-test_endpoint "Webhook" "/webhooks" "POST" '{"url":"http://example.com/webhook","eventType":"task.created"}'
-test_endpoint "Webhook" "/webhooks"
-test_endpoint "Webhook" "/webhooks/health"
+# UI Service Endpoints
+echo -e "\n=== UI Service ==="
+test_endpoint "UI Service" "3002" "/health"
 
-# Monitoring Service Endpoints
-echo -e "\n=== Monitoring Service ==="
-test_endpoint "Monitoring" "/monitoring/metrics"
-test_endpoint "Monitoring" "/monitoring/health"
-test_endpoint "Monitoring" "/monitoring/alerts"
+# Avetta Doc Agent Endpoints
+echo -e "\n=== Avetta Doc Agent ==="
+test_endpoint "Avetta Doc Agent" "3004" "/health"
 
-# Service Discovery Endpoints
-echo -e "\n=== Service Discovery ==="
-test_endpoint "ServiceDiscovery" "/service-discovery/services"
-test_endpoint "ServiceDiscovery" "/service-discovery/health" 
+# Monitoring Endpoints
+echo -e "\n=== Monitoring Services ==="
+test_endpoint "Prometheus" "9090" "/-/healthy"
+test_endpoint "Grafana" "3003" "/api/health"
+test_endpoint "Elasticsearch" "9200" "/_cluster/health"
+test_endpoint "Kibana" "5601" "/api/status"
+test_endpoint "Logstash" "9600" "/_node/stats"
+
+# Ngrok Endpoints
+echo -e "\n=== Ngrok ==="
+test_endpoint "Ngrok" "4040" "/api/tunnels" 

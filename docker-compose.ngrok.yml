@@ -8,7 +8,7 @@ services:
     environment:
       - NGROK_AUTHTOKEN=2v8mL2pR0ME0h96os13RtWbJFSL_7Zw7tN6LHTrZGdms7MUB3
     volumes:
-      - ./ngrok/ngrok.yml:/etc/ngrok/ngrok.yml
+      - ./tools/ngrok/ngrok.yml:/etc/ngrok/ngrok.yml
     command: start avetta-doc-agent --config /etc/ngrok/ngrok.yml
     networks:
       - monitoring
@@ -17,9 +17,9 @@ services:
 
   avetta-doc-agent:
     build:
-      context: ./avettaDocAgent
+      context: ./tools/avettaDocAgent
     ports:
-      - "3002:3002"
+      - "3004:3002"
     environment:
       - PORT=3002
     networks:

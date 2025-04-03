@@ -1,27 +1,37 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Document } from './interfaces/document.interface';
+import { firstValueFrom } from 'rxjs';
+import { Document } from '../entities/document.entity';
 import { CreateDocumentDto } from './dto/create-document.dto';
 
 @Injectable()
 export class DocumentService {
-  constructor(
-    @Inject('DOCUMENT_SERVICE') private readonly documentClient: ClientProxy,
-  ) {}
+  constructor(private readonly documentClient: ClientProxy) {}
 
   async create(createDocumentDto: CreateDocumentDto): Promise<Document> {
-    return this.documentClient.send('create_document', createDocumentDto);
+    const result = await firstValueFrom(
+      this.documentClient.send('create_document', createDocumentDto)
+    );
+    return result;
   }
 
   async findAll(): Promise<Document[]> {
-    return this.documentClient.send('find_all_documents', {});
+    const result = await firstValueFrom(
+      this.documentClient.send('find_all_documents', {})
+    );
+    return result;
   }
 
   async findOne(id: string): Promise<Document> {
-    return this.documentClient.send('find_one_document', { id });
+    const result = await firstValueFrom(
+      this.documentClient.send('find_one_document', { id })
+    );
+    return result;
   }
 
   async remove(id: string): Promise<void> {
-    return this.documentClient.send('remove_document', { id });
+    await firstValueFrom(
+      this.documentClient.send('remove_document', { id })
+    );
   }
 } 

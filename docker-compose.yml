@@ -3,144 +3,160 @@ version: '3.8'
 services:
   api-gateway:
     build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
     ports:
-      - "${API_GATEWAY_PORT:-3002}:${API_GATEWAY_PORT:-3002}"
+      - "3001:3001"
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - PORT=${API_GATEWAY_PORT:-3002}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-api}
-    depends_on:
-      - rabbitmq
-      - postgres
+      - NODE_ENV=production
+      - TASK_SERVICE_HOST=task-service
+      - TASK_SERVICE_PORT=3000
+      - DOCUMENT_SERVICE_HOST=document-service
+      - DOCUMENT_SERVICE_PORT=3002
+      - WEBHOOK_SERVICE_HOST=webhook-service
+      - WEBHOOK_SERVICE_PORT=3003
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   task-service:
     build:
-      context: ./services/task-service
+      context: .
       dockerfile: Dockerfile
     ports:
-      - "${TASK_SERVICE_PORT:-3003}:${TASK_SERVICE_PORT:-3003}"
+      - "3000:3000"
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - PORT=${TASK_SERVICE_PORT:-3003}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - NODE_ENV=development
+      - PORT=3000
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-api}
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=task_service
+    volumes:
+      - .:/app
+      - /app/node_modules
     depends_on:
-      - rabbitmq
       - postgres
-
-  webhook-service:
-    build:
-      context: ./services/webhook-service
-      dockerfile: Dockerfile
-    ports:
-      - "${WEBHOOK_SERVICE_PORT:-3004}:${WEBHOOK_SERVICE_PORT:-3004}"
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - PORT=${WEBHOOK_SERVICE_PORT:-3004}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-api}
-    depends_on:
-      - rabbitmq
-      - postgres
-
-  document-service:
-    build:
-      context: ./services/document-service
-      dockerfile: Dockerfile
-    ports:
-      - "${DOCUMENT_SERVICE_PORT:-3005}:${DOCUMENT_SERVICE_PORT:-3005}"
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - PORT=${DOCUMENT_SERVICE_PORT:-3005}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-api}
-    depends_on:
-      - rabbitmq
-      - postgres
-
-  monitoring-service:
-    build:
-      context: ./services/monitoring-service
-      dockerfile: Dockerfile
-    ports:
-      - "${MONITORING_SERVICE_PORT:-3006}:${MONITORING_SERVICE_PORT:-3006}"
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - PORT=${MONITORING_SERVICE_PORT:-3006}
-      - RABBITMQ_URL=amqp://rabbitmq:5672
-      - PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
-      - GRAFANA_PORT=${GRAFANA_PORT:-3001}
-      - JAEGER_ENABLED=${JAEGER_ENABLED:-true}
-      - OTEL_ENABLED=${OTEL_ENABLED:-true}
-    depends_on:
-      - rabbitmq
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   postgres:
     image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=task_service
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=${DB_USERNAME:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_DATABASE:-api}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ui-service:
+    build:
+      context: ./services/ui-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    environment:
+      - TASK_SERVICE_URL=http://task-service:3000
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'status.*green\\|status.*yellow'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "${PROMETHEUS_PORT:-9090}:${PROMETHEUS_PORT:-9090}"
+    image: prom/prometheus:v2.30.3
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./tools/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-    depends_on:
-      - monitoring-service
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "${GRAFANA_PORT:-3001}:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    image: grafana/grafana:8.2.0
     volumes:
+      - ./tools/grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3003:3000"
     depends_on:
       - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgres_data:
+  elasticsearch_data:
   prometheus_data:
   grafana_data:
 

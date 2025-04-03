@@ -3,14 +3,29 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TaskStatus } from '../enums/task-status.enum';
 import { TaskPriority } from '../enums/task-priority.enum';
 
+export interface ITask {
+  id: number;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  completed: boolean;
+  assignedTo: string | null;
+  dueDate: Date | null;
+  metadata: Record<string, any> | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
 @Entity('tasks')
-export class Task {
+export class Task implements ITask {
   @ApiProperty({
     description: 'The unique identifier of the task',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    example: 1,
   })
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @ApiProperty({
     description: 'The title of the task',
@@ -22,10 +37,9 @@ export class Task {
   @ApiProperty({
     description: 'A detailed description of the task',
     example: 'Implement JWT-based authentication with refresh tokens',
-    nullable: true,
   })
   @Column({ nullable: true })
-  description?: string;
+  description: string | null;
 
   @ApiProperty({
     description: 'The current status of the task',
@@ -34,8 +48,7 @@ export class Task {
     default: TaskStatus.PENDING,
   })
   @Column({
-    type: 'enum',
-    enum: TaskStatus,
+    type: 'int',
     default: TaskStatus.PENDING
   })
   status: TaskStatus;
@@ -47,8 +60,7 @@ export class Task {
     default: TaskPriority.MEDIUM,
   })
   @Column({
-    type: 'enum',
-    enum: TaskPriority,
+    type: 'int',
     default: TaskPriority.MEDIUM
   })
   priority: TaskPriority;
@@ -62,20 +74,18 @@ export class Task {
   completed: boolean;
 
   @ApiProperty({
-    description: 'The UUID of the user assigned to this task',
+    description: 'The ID of the user assigned to this task',
     example: '123e4567-e89b-12d3-a456-426614174000',
-    nullable: true,
   })
   @Column({ nullable: true })
-  assignedTo?: string;
+  assignedTo: string | null;
 
   @ApiProperty({
     description: 'The due date for the task',
     example: '2025-12-31T23:59:59Z',
-    nullable: true,
   })
   @Column({ type: 'timestamp', nullable: true })
-  dueDate?: Date;
+  dueDate: Date | null;
 
   @ApiProperty({
     description: 'Additional metadata for the task',
@@ -85,8 +95,8 @@ export class Task {
     },
     nullable: true,
   })
-  @Column('jsonb', { nullable: true })
-  metadata?: Record<string, any>;
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: Record<string, any> | null;
 
   @ApiProperty({
     description: 'The creation date of the task',
@@ -107,6 +117,6 @@ export class Task {
     example: '2025-01-01T00:00:00Z',
     nullable: true,
   })
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date;
+  @DeleteDateColumn()
+  deletedAt: Date | null;
 } 

@@ -14,19 +14,23 @@ async function bootstrap() {
   app.enableCors();
 
   // Enable validation
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+  }));
 
   // Setup Swagger
   const config = new DocumentBuilder()
     .setTitle('API Gateway')
-    .setDescription('API Gateway for microservices')
+    .setDescription('API Gateway for microservices architecture')
     .setVersion('1.0')
+    .addTag('api-gateway')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3002;
+  const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`API Gateway is running on: ${await app.getUrl()}`);
   console.log(`Swagger documentation available at http://localhost:${port}/api`);

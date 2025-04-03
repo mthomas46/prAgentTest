@@ -3,7 +3,7 @@
 # Grafana credentials
 GRAFANA_USER="admin"
 GRAFANA_PASSWORD="admin"
-GRAFANA_URL="http://localhost:3001"
+GRAFANA_URL="http://localhost:3003"
 
 # Create datasources
 curl -X POST \

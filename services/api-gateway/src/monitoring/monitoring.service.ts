@@ -1,18 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
-import { Counter, Histogram } from 'prom-client';
+import { Counter, Histogram, register } from 'prom-client';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 
 @Injectable()
 export class MonitoringService {
   private readonly logger = new Logger(MonitoringService.name);
+  private readonly httpRequestsCounter: Counter<string>;
+  private readonly httpRequestDuration: Histogram<string>;
 
   constructor(
-    @Inject('MONITORING_SERVICE') private readonly monitoringClient: ClientProxy,
-    @InjectMetric('http_requests_total') private readonly httpRequestsCounter: Counter<string>,
-    @InjectMetric('http_request_duration_seconds') private readonly httpRequestDuration: Histogram<string>,
-  ) {}
+    @Inject('MONITORING_SERVICE') private readonly monitoringClient: ClientProxy
+  ) {
+    this.httpRequestsCounter = new Counter({
+      name: 'http_requests_total',
+      help: 'Total number of HTTP requests',
+      labelNames: ['method', 'path', 'status'],
+    });
+
+    this.httpRequestDuration = new Histogram({
+      name: 'http_request_duration_seconds',
+      help: 'Duration of HTTP requests in seconds',
+      labelNames: ['method', 'path'],
+      buckets: [0.1, 0.5, 1, 2, 5],
+    });
+
+    register.registerMetric(this.httpRequestsCounter);
+    register.registerMetric(this.httpRequestDuration);
+  }
 
   async trackRequest(method: string, path: string, statusCode: number, duration: number) {
     // Track in Prometheus
@@ -148,5 +164,13 @@ export class MonitoringService {
       status,
       duration,
     });
+  }
+
+  recordHttpRequest(method: string, path: string, statusCode: number): void {
+    this.httpRequestsCounter.inc({ method, path, status: statusCode.toString() });
+  }
+
+  startHttpRequestDuration(method: string, path: string): () => void {
+    return this.httpRequestDuration.startTimer({ method, path });
   }
 } 

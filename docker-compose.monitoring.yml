@@ -24,8 +24,8 @@ services:
       - "5000:5000/udp"
       - "9600:9600"
     volumes:
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./tools/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./tools/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
     depends_on:
       - elasticsearch
     networks:
@@ -47,7 +47,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./tools/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -87,7 +87,7 @@ services:
 
   avetta-doc-agent:
     build:
-      context: ./avettaDocAgent
+      context: ./tools/avettaDocAgent
       dockerfile: Dockerfile
     ports:
       - "3002:3000"
@@ -96,7 +96,7 @@ services:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - LOGSTASH_URL=http://logstash:9600
     volumes:
-      - ./avettaDocAgent:/app
+      - ./tools/avettaDocAgent:/app
       - /app/node_modules
     depends_on:
       - elasticsearch

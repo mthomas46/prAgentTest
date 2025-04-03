@@ -1,11 +1,27 @@
-node_modules
-npm-debug.log
-Dockerfile
-.dockerignore
+# Versioning and metadata
 .git
 .gitignore
-README.md
+.dockerignore
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Environment (contains sensitive data)
 .env
+
+# Logs
+logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+npm-debug.log
+Dockerfile
+README.md
 .env.example
-coverage
-dist 
+coverage 

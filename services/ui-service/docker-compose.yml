@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ui-service:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - TASK_SERVICE_URL=http://task-service:3000
+    depends_on:
+      - task-service 
