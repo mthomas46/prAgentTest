@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ITask, TaskStatus } from '../../../shared/interfaces/task.interface';
 
-@Entity()
+@Entity('tasks')
 export class Task implements ITask {
   @PrimaryGeneratedColumn('uuid')
   id: string;

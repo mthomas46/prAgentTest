@@ -1,30 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Transport } from '@nestjs/microservices';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('TaskService');
+  
+  const app = await NestFactory.createMicroservice(AppModule, {
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+      queue: 'task_queue',
+      queueOptions: {
+        durable: true,
+      },
+    },
+  });
 
   // Enable validation
   app.useGlobalPipes(new ValidationPipe());
 
-  // Enable CORS
-  app.enableCors();
-
-  // Setup Swagger
-  const config = new DocumentBuilder()
-    .setTitle('Task Service API')
-    .setDescription('The task service API description')
-    .setVersion('1.0')
-    .addTag('tasks')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-
-  const port = process.env.PORT || 3002;
-  await app.listen(port);
-  console.log(`Task service is running on port ${port}`);
+  await app.listen();
+  logger.log('Task service is running');
 }
 
 bootstrap(); 

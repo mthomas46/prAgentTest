@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoggerService } from '../src/common/services/logger.service';
+import { LoggerService } from '../shared/logger/logger.service';
 
 describe('LoggerService', () => {
   let service: LoggerService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [LoggerService],
     }).compile();
@@ -17,27 +17,41 @@ describe('LoggerService', () => {
   });
 
   it('should log info messages', () => {
-    expect(() => service.log('Test info message')).not.toThrow();
+    const spy = jest.spyOn(console, 'info');
+    service.log('Test info message');
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should log error messages', () => {
-    const error = new Error('Test error');
-    expect(() => service.error('Test error message', error.stack)).not.toThrow();
+    const spy = jest.spyOn(console, 'error');
+    service.error('Test error message', 'Error: Test error');
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should log warning messages', () => {
-    expect(() => service.warn('Test warning message')).not.toThrow();
+    const spy = jest.spyOn(console, 'warn');
+    service.warn('Test warning message');
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should log debug messages', () => {
-    expect(() => service.debug('Test debug message')).not.toThrow();
+    const spy = jest.spyOn(console, 'debug');
+    service.debug('Test debug message');
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should log verbose messages', () => {
-    expect(() => service.verbose('Test verbose message')).not.toThrow();
+    const spy = jest.spyOn(console, 'debug');
+    service.verbose('Test verbose message');
+    expect(spy).toHaveBeenCalled();
   });
 
   it('should include context in log messages', () => {
-    expect(() => service.log('Test message with context', 'TestContext')).not.toThrow();
+    const spy = jest.spyOn(console, 'info');
+    service.log('Test message with context', 'TestContext');
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining('TestContext'),
+      expect.any(String)
+    );
   });
 }); 

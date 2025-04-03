@@ -1,3 +1,120 @@
+# Event-Driven Microservice Architecture
+
+A robust, scalable, and performant event-driven microservice architecture built with NestJS.
+
+## Features
+
+- Event-driven communication using RabbitMQ
+- Multiple caching strategies (LRU, LFU, FIFO, TTL)
+- Database connection pooling with health monitoring
+- Comprehensive performance monitoring
+- Event batching and processing
+- Event validation and compression
+- Event archiving and retrieval
+- Retry mechanisms and error handling
+
+## Prerequisites
+
+- Node.js (v16 or later)
+- PostgreSQL (v12 or later)
+- RabbitMQ
+- Docker (optional)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/event-driven-microservice.git
+cd event-driven-microservice
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. Start the services:
+```bash
+# Using Docker Compose
+docker-compose up -d
+
+# Or manually
+npm run start:dev
+```
+
+## Project Structure
+
+```
+├── src/
+│   ├── common/           # Shared modules and utilities
+│   ├── config/          # Configuration files
+│   ├── entities/        # Database entities
+│   ├── interfaces/      # TypeScript interfaces
+│   ├── modules/         # Feature modules
+│   ├── repositories/    # Database repositories
+│   └── services/        # Business logic services
+├── test/               # Test files
+├── docs/              # Documentation
+└── docker/            # Docker configuration
+```
+
+## Documentation
+
+Detailed documentation is available in the `docs` directory:
+
+- [Event System Documentation](docs/EVENT_SYSTEM.md)
+- [API Documentation](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+## Testing
+
+Run the test suite:
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## Monitoring
+
+The system includes comprehensive monitoring capabilities:
+
+- Database connection health
+- Cache performance metrics
+- System resource utilization
+- Event processing statistics
+
+Access monitoring dashboards:
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, please open an issue in the GitHub repository or contact the maintainers.
+
 # Microservices Architecture
 
 A modern, scalable microservices architecture built with NestJS, featuring comprehensive monitoring, logging, and observability.

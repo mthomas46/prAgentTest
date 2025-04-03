@@ -2,8 +2,9 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: 'tsconfig.json',
+    tsconfigRootDir: __dirname,
     sourceType: 'module',
-    ecmaVersion: 2020,
+    ecmaVersion: 2022
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
@@ -14,7 +15,6 @@ module.exports = {
   env: {
     node: true,
     jest: true,
-    es2020: true,
   },
   ignorePatterns: [
     '.eslintrc.js',
@@ -34,6 +34,5 @@ module.exports = {
     'no-console': 'warn',
     'no-debugger': 'warn',
     'no-duplicate-imports': 'warn',
-    'no-unused-vars': 'off', // Using TypeScript's no-unused-vars
-  },
+  }
 }; 

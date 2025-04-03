@@ -1,18 +1,19 @@
 module.exports = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
-  rootDir: '.',
-  testRegex: '.*\\.spec\\.ts$',
-  transform: {
-    '^.+\\.(t|j)s$': 'babel-jest',
-  },
-  collectCoverageFrom: ['**/*.(t|j)s'],
-  coverageDirectory: '../coverage',
+  preset: 'ts-jest',
   testEnvironment: 'node',
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.jsx?$': 'babel-jest',
   },
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   transformIgnorePatterns: [
-    'node_modules/(?!@nestjs/common|@nestjs/core|@nestjs/testing|typeorm|@nestjs/platform-express)'
+    'node_modules/(?!(?:@nestjs|@babel)/)',
   ],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  testMatch: ['**/test/**/*.spec.ts', '**/test/**/*.test.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.json',
+    },
+  },
 }; 
