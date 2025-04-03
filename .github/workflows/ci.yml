@@ -16,7 +16,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: api_test
+          POSTGRES_DB: hel
         ports:
           - 5432:5432
         options: >-
@@ -46,7 +46,7 @@ jobs:
     - name: Run tests
       run: npm test
       env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/api_test
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/hel
 
   build:
     needs: test
