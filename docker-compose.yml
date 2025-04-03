@@ -1,0 +1,149 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "${API_GATEWAY_PORT:-3002}:${API_GATEWAY_PORT:-3002}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${API_GATEWAY_PORT:-3002}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-api}
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  task-service:
+    build:
+      context: ./services/task-service
+      dockerfile: Dockerfile
+    ports:
+      - "${TASK_SERVICE_PORT:-3003}:${TASK_SERVICE_PORT:-3003}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${TASK_SERVICE_PORT:-3003}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-api}
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  webhook-service:
+    build:
+      context: ./services/webhook-service
+      dockerfile: Dockerfile
+    ports:
+      - "${WEBHOOK_SERVICE_PORT:-3004}:${WEBHOOK_SERVICE_PORT:-3004}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${WEBHOOK_SERVICE_PORT:-3004}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-api}
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  document-service:
+    build:
+      context: ./services/document-service
+      dockerfile: Dockerfile
+    ports:
+      - "${DOCUMENT_SERVICE_PORT:-3005}:${DOCUMENT_SERVICE_PORT:-3005}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${DOCUMENT_SERVICE_PORT:-3005}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-api}
+    depends_on:
+      - rabbitmq
+      - postgres
+
+  monitoring-service:
+    build:
+      context: ./services/monitoring-service
+      dockerfile: Dockerfile
+    ports:
+      - "${MONITORING_SERVICE_PORT:-3006}:${MONITORING_SERVICE_PORT:-3006}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${MONITORING_SERVICE_PORT:-3006}
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
+      - GRAFANA_PORT=${GRAFANA_PORT:-3001}
+      - JAEGER_ENABLED=${JAEGER_ENABLED:-true}
+      - OTEL_ENABLED=${OTEL_ENABLED:-true}
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USERNAME:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_DATABASE:-api}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:${PROMETHEUS_PORT:-9090}"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - monitoring-service
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    driver: bridge 

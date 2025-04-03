@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run type checking
+npm run type:check
+
+# Run linting
+npm run lint:check
+
+# Run formatting check
+npm run format:check
+
+# Run tests in CI mode
+npm run test:ci
+
+# Check for sensitive data
+if git diff --cached --name-only | grep -E "\.(env|key|secret|pem)$"; then
+  echo "Error: Attempting to commit sensitive files"
+  exit 1
+fi

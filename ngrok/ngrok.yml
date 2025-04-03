@@ -1,0 +1,37 @@
+version: "2"
+tunnels:
+  avetta-doc-agent:
+    proto: http
+    addr: avetta-doc-agent:3002
+    inspect: true
+    name: avetta-doc-agent
+  api:
+    proto: http
+    addr: api:3000
+    inspect: true
+    name: api
+  grafana:
+    proto: http
+    addr: grafana:3000
+    inspect: true
+    name: grafana
+  prometheus:
+    proto: http
+    addr: prometheus:9090
+    inspect: true
+    name: prometheus
+  kibana:
+    proto: http
+    addr: kibana:5601
+    inspect: true
+    name: kibana
+  elasticsearch:
+    proto: http
+    addr: elasticsearch:9200
+    inspect: true
+    name: elasticsearch
+  logstash:
+    proto: http
+    addr: logstash:9600
+    inspect: true
+    name: logstash 

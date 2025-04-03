@@ -1,0 +1,311 @@
+{
+  "api-gateway-overview": {
+    "dashboard": {
+      "id": null,
+      "uid": "api-gateway-overview",
+      "title": "API Gateway Overview",
+      "tags": ["api-gateway", "overview"],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "5s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "title": "Request Rate",
+          "type": "graph",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "targets": [
+            {
+              "expr": "rate(http_requests_total[5m])",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "title": "Error Rate",
+          "type": "graph",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "targets": [
+            {
+              "expr": "rate(http_errors_total[5m])",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "api-gateway-latency": {
+    "dashboard": {
+      "id": null,
+      "uid": "api-gateway-latency",
+      "title": "API Gateway Latency",
+      "tags": ["api-gateway", "latency"],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "5s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "title": "Request Latency",
+          "type": "graph",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "targets": [
+            {
+              "expr": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
+              "legendFormat": "{{method}} {{path}}"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "api-gateway-resources": {
+    "dashboard": {
+      "id": null,
+      "uid": "api-gateway-resources",
+      "title": "API Gateway Resources",
+      "tags": ["api-gateway", "resources"],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "5s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "title": "Memory Usage",
+          "type": "graph",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "targets": [
+            {
+              "expr": "process_resident_memory_bytes{job=\"api-gateway\"}",
+              "legendFormat": "Memory (bytes)"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "title": "CPU Usage",
+          "type": "graph",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "targets": [
+            {
+              "expr": "rate(process_cpu_seconds_total{job=\"api-gateway\"}[5m])",
+              "legendFormat": "CPU Usage"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "api-gateway": {
+    "title": "API Gateway Dashboard",
+    "panels": [
+      {
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{path}}"
+          }
+        ]
+      },
+      {
+        "title": "Request Duration",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "95th percentile"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
+            "legendFormat": "5xx errors"
+          }
+        ]
+      },
+      {
+        "title": "Task Operations",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(task_operations_total[5m])",
+            "legendFormat": "{{operation}}"
+          }
+        ]
+      },
+      {
+        "title": "Webhook Events",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(webhook_events_total[5m])",
+            "legendFormat": "{{event_type}}"
+          }
+        ]
+      },
+      {
+        "title": "Service Health",
+        "type": "singlestat",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "{{job}}"
+          }
+        ]
+      }
+    ]
+  },
+  "system-metrics": {
+    "title": "System Metrics Dashboard",
+    "panels": [
+      {
+        "title": "CPU Usage",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ]
+      },
+      {
+        "title": "Memory Usage",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "100 * (1 - ((node_memory_MemAvailable_bytes or node_memory_Buffers_bytes + node_memory_Cached_bytes + node_memory_MemFree_bytes) / node_memory_MemTotal_bytes))",
+            "legendFormat": "{{instance}}"
+          }
+        ]
+      },
+      {
+        "title": "Disk I/O",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(node_disk_io_time_seconds_total[5m])",
+            "legendFormat": "{{device}}"
+          }
+        ]
+      },
+      {
+        "title": "Network Traffic",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total[5m])",
+            "legendFormat": "{{device}} receive"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total[5m])",
+            "legendFormat": "{{device}} transmit"
+          }
+        ]
+      }
+    ]
+  },
+  "elasticsearch": {
+    "title": "Elasticsearch Dashboard",
+    "panels": [
+      {
+        "title": "Document Count",
+        "type": "graph",
+        "datasource": "Elasticsearch",
+        "targets": [
+          {
+            "query": "{\"size\":0,\"aggs\":{\"count_over_time\":{\"date_histogram\":{\"field\":\"@timestamp\",\"interval\":\"1m\"}}}}",
+            "legendFormat": "Documents"
+          }
+        ]
+      },
+      {
+        "title": "Error Rate",
+        "type": "graph",
+        "datasource": "Elasticsearch",
+        "targets": [
+          {
+            "query": "{\"size\":0,\"aggs\":{\"error_count\":{\"date_histogram\":{\"field\":\"@timestamp\",\"interval\":\"1m\"},\"aggs\":{\"error_filter\":{\"filter\":{\"term\":{\"level\":\"error\"}}}}}}}",
+            "legendFormat": "Errors"
+          }
+        ]
+      },
+      {
+        "title": "Response Time",
+        "type": "graph",
+        "datasource": "Elasticsearch",
+        "targets": [
+          {
+            "query": "{\"size\":0,\"aggs\":{\"avg_response_time\":{\"date_histogram\":{\"field\":\"@timestamp\",\"interval\":\"1m\"},\"aggs\":{\"avg_duration\":{\"avg\":{\"field\":\"duration\"}}}}}}",
+            "legendFormat": "Average Response Time"
+          }
+        ]
+      }
+    ]
+  }
+} 
