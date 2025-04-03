@@ -1,16 +1,20 @@
-import { registerAs } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
-export default registerAs('database', () => ({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_DATABASE || 'api',
-  synchronize: process.env.NODE_ENV !== 'production',
-  logging: process.env.NODE_ENV === 'development',
-  entities: ['dist/**/*.entity{.ts,.js}'],
-  migrations: ['dist/migrations/*{.ts,.js}'],
-  cli: {
-    migrationsDir: 'src/migrations',
-  },
-})); 
+export const getDatabaseConfig = (configService: ConfigService): TypeOrmModuleOptions => ({
+  type: 'postgres',
+  host: configService.get('DB_HOST'),
+  port: configService.get('DB_PORT'),
+  username: configService.get('DB_USERNAME'),
+  password: configService.get('DB_PASSWORD'),
+  database: configService.get('DB_DATABASE'),
+  entities: [__dirname + '/../../**/**.entity{.ts,.js}'],
+  synchronize: configService.get('NODE_ENV') !== 'production',
+  logging: configService.get('DB_LOGGING') === 'true',
+  ssl: configService.get('NODE_ENV') === 'production' ? {
+    rejectUnauthorized: false
+  } : false,
+  retryAttempts: 5,
+  retryDelay: 3000,
+  autoLoadEntities: true,
+}); 

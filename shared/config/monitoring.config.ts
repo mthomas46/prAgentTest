@@ -1,4 +1,6 @@
 import { registerAs } from '@nestjs/config';
+import { PrometheusOptions } from '@willsoto/nestjs-prometheus';
+import { ConfigService } from '@nestjs/config';
 
 export default registerAs('monitoring', () => ({
   prometheus: {
@@ -20,4 +22,33 @@ export default registerAs('monitoring', () => ({
     serviceName: process.env.OTEL_SERVICE_NAME || 'api-gateway',
     endpoint: process.env.OTEL_ENDPOINT || 'http://localhost:4317',
   },
-})); 
+}));
+
+export const getMonitoringConfig = (configService: ConfigService): PrometheusOptions => ({
+  defaultMetrics: {
+    enabled: true,
+    config: {
+      prefix: configService.get('METRICS_PREFIX', 'app_'),
+    },
+  },
+  defaultLabels: {
+    app: configService.get('APP_NAME', 'app'),
+    env: configService.get('NODE_ENV', 'development'),
+  },
+});
+
+export const getElasticsearchConfig = (configService: ConfigService) => ({
+  node: configService.get('ELASTICSEARCH_URL', 'http://localhost:9200'),
+  auth: {
+    username: configService.get('ELASTICSEARCH_USERNAME'),
+    password: configService.get('ELASTICSEARCH_PASSWORD'),
+  },
+  ssl: {
+    rejectUnauthorized: configService.get('NODE_ENV') === 'production',
+  },
+});
+
+export const getLogstashConfig = (configService: ConfigService) => ({
+  node: configService.get('LOGSTASH_URL', 'http://localhost:5044'),
+  indexPrefix: configService.get('LOGSTASH_INDEX_PREFIX', 'logs'),
+}); 
