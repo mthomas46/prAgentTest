@@ -7,9 +7,7 @@ import { UpdateWebhookDto } from './dto/update-webhook.dto';
 @ApiTags('webhooks')
 @Controller('webhooks')
 export class WebhookController {
-  constructor(
-    @Inject('WEBHOOK_SERVICE') private readonly webhookService: ClientProxy,
-  ) {}
+  constructor(@Inject('WEBHOOK_SERVICE') private readonly webhookService: ClientProxy) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new webhook' })
@@ -37,10 +35,7 @@ export class WebhookController {
   @ApiOperation({ summary: 'Update webhook' })
   @ApiResponse({ status: 200, description: 'Webhook updated successfully' })
   @ApiResponse({ status: 404, description: 'Webhook not found' })
-  async updateWebhook(
-    @Param('id') id: string,
-    @Body() updateWebhookDto: UpdateWebhookDto,
-  ) {
+  async updateWebhook(@Param('id') id: string, @Body() updateWebhookDto: UpdateWebhookDto) {
     return this.webhookService.send('updateWebhook', { id, ...updateWebhookDto });
   }
 
@@ -56,10 +51,7 @@ export class WebhookController {
   @ApiOperation({ summary: 'Trigger webhook' })
   @ApiResponse({ status: 200, description: 'Webhook triggered successfully' })
   @ApiResponse({ status: 404, description: 'Webhook not found' })
-  async triggerWebhook(
-    @Param('id') id: string,
-    @Body() payload: any,
-  ) {
+  async triggerWebhook(@Param('id') id: string, @Body() payload: any) {
     return this.webhookService.send('triggerWebhook', { id, payload });
   }
-} 
+}

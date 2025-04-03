@@ -1,39 +1,46 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ServiceDiscoveryService } from './service-discovery.service';
 
 @ApiTags('service-discovery')
 @Controller('service-discovery')
 export class ServiceDiscoveryController {
-  constructor(private readonly serviceDiscoveryService: ServiceDiscoveryService) {}
+  constructor(
+    @Inject('SERVICE_DISCOVERY') private readonly serviceDiscoveryClient: ClientProxy,
+  ) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new service' })
+  @ApiResponse({ status: 201, description: 'Service registered successfully' })
+  async registerService(@Body() service: any) {
+    return this.serviceDiscoveryClient.send('register_service', service);
+  }
 
   @Get('services')
   @ApiOperation({ summary: 'Get all registered services' })
-  @ApiResponse({ status: 200, description: 'Returns all registered services' })
-  async getAllServices() {
-    return this.serviceDiscoveryService.getAllServices();
+  @ApiResponse({ status: 200, description: 'Return all registered services' })
+  async findAllServices() {
+    return this.serviceDiscoveryClient.send('find_all_services', {});
   }
 
-  @Get('services/:name')
-  @ApiOperation({ summary: 'Get service information by name' })
-  @ApiResponse({ status: 200, description: 'Returns service information' })
-  @ApiResponse({ status: 404, description: 'Service not found' })
-  async getServiceInfo(@Param('name') name: string) {
-    return this.serviceDiscoveryService.getServiceInfo(name);
+  @Get('services/:id')
+  @ApiOperation({ summary: 'Get a service by id' })
+  @ApiResponse({ status: 200, description: 'Return the service' })
+  async findOneService(@Param('id') id: string) {
+    return this.serviceDiscoveryClient.send('find_one_service', { id });
+  }
+
+  @Delete('services/:id')
+  @ApiOperation({ summary: 'Unregister a service' })
+  @ApiResponse({ status: 200, description: 'Service unregistered successfully' })
+  async unregisterService(@Param('id') id: string) {
+    return this.serviceDiscoveryClient.send('unregister_service', { id });
   }
 
   @Get('health')
-  @ApiOperation({ summary: 'Check health of all services' })
-  @ApiResponse({ status: 200, description: 'Returns health status of all services' })
-  async checkAllServices() {
-    return this.serviceDiscoveryService.checkAllServices();
+  @ApiOperation({ summary: 'Get service health status' })
+  @ApiResponse({ status: 200, description: 'Return health status' })
+  async getHealth() {
+    return this.serviceDiscoveryClient.send('get_health', {});
   }
-
-  @Get('health/:name')
-  @ApiOperation({ summary: 'Check health of a specific service' })
-  @ApiResponse({ status: 200, description: 'Returns health status of the service' })
-  @ApiResponse({ status: 404, description: 'Service not found' })
-  async checkServiceHealth(@Param('name') name: string) {
-    return this.serviceDiscoveryService.checkServiceHealth(name);
-  }
-} 
+}

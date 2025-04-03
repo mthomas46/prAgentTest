@@ -1,12 +1,23 @@
 import { Module } from '@nestjs/common';
-import { ServiceDiscoveryService } from './service-discovery.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ServiceDiscoveryController } from './service-discovery.controller';
-import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [HttpModule],
+  imports: [
+    ClientsModule.register([
+      {
+        name: 'SERVICE_DISCOVERY',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+          queue: 'service_discovery_queue',
+          queueOptions: {
+            durable: false
+          },
+        },
+      },
+    ]),
+  ],
   controllers: [ServiceDiscoveryController],
-  providers: [ServiceDiscoveryService],
-  exports: [ServiceDiscoveryService],
 })
-export class ServiceDiscoveryModule {} 
+export class ServiceDiscoveryModule {}

@@ -10,4 +10,4 @@ const sdk = new NodeSDK({
   serviceName: 'api-gateway',
 });
 
-export default sdk; 
+export default sdk;

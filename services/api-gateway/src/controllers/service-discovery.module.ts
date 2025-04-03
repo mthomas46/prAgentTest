@@ -20,4 +20,4 @@ import { ServiceDiscoveryController } from './service-discovery.controller';
   ],
   controllers: [ServiceDiscoveryController],
 })
-export class ServiceDiscoveryModule {} 
+export class ServiceDiscoveryModule {}

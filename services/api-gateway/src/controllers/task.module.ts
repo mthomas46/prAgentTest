@@ -20,4 +20,4 @@ import { TaskController } from './task.controller';
   ],
   controllers: [TaskController],
 })
-export class TaskModule {} 
+export class TaskModule {}

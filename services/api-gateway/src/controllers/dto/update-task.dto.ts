@@ -33,4 +33,4 @@ export class UpdateTaskDto extends PartialType(CreateTaskDto) {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
-} 
+}

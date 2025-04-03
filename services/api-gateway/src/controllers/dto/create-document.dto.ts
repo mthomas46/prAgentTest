@@ -15,4 +15,4 @@ export class CreateDocumentDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
-} 
+}

@@ -18,4 +18,4 @@ export class UpdateDocumentDto extends PartialType(CreateDocumentDto) {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
-} 
+}

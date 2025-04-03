@@ -7,9 +7,7 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 @ApiTags('documents')
 @Controller('documents')
 export class DocumentController {
-  constructor(
-    @Inject('DOCUMENT_SERVICE') private readonly documentService: ClientProxy,
-  ) {}
+  constructor(@Inject('DOCUMENT_SERVICE') private readonly documentService: ClientProxy) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new document' })
@@ -37,10 +35,7 @@ export class DocumentController {
   @ApiOperation({ summary: 'Update document' })
   @ApiResponse({ status: 200, description: 'Document updated successfully' })
   @ApiResponse({ status: 404, description: 'Document not found' })
-  async updateDocument(
-    @Param('id') id: string,
-    @Body() updateDocumentDto: UpdateDocumentDto,
-  ) {
+  async updateDocument(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto) {
     return this.documentService.send('updateDocument', { id, ...updateDocumentDto });
   }
 
@@ -51,4 +46,4 @@ export class DocumentController {
   async deleteDocument(@Param('id') id: string) {
     return this.documentService.send('deleteDocument', { id });
   }
-} 
+}

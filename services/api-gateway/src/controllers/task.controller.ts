@@ -7,9 +7,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 @ApiTags('tasks')
 @Controller('tasks')
 export class TaskController {
-  constructor(
-    @Inject('TASK_SERVICE') private readonly taskService: ClientProxy,
-  ) {}
+  constructor(@Inject('TASK_SERVICE') private readonly taskService: ClientProxy) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
@@ -37,10 +35,7 @@ export class TaskController {
   @ApiOperation({ summary: 'Update task' })
   @ApiResponse({ status: 200, description: 'Task updated successfully' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async updateTask(
-    @Param('id') id: string,
-    @Body() updateTaskDto: UpdateTaskDto,
-  ) {
+  async updateTask(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
     return this.taskService.send('updateTask', { id, ...updateTaskDto });
   }
 
@@ -64,10 +59,7 @@ export class TaskController {
   @ApiOperation({ summary: 'Assign task to user' })
   @ApiResponse({ status: 200, description: 'Task assigned successfully' })
   @ApiResponse({ status: 404, description: 'Task not found' })
-  async assignTask(
-    @Param('id') id: string,
-    @Body('userId') userId: string,
-  ) {
+  async assignTask(@Param('id') id: string, @Body('userId') userId: string) {
     return this.taskService.send('assignTask', { id, userId });
   }
-} 
+}

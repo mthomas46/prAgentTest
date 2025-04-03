@@ -6,31 +6,24 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3002:3002"
     environment:
-      - PORT=3000
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318/v1/traces
+      - PORT=3002
+      - RABBITMQ_URL=amqp://rabbitmq:5672
       - NODE_ENV=development
     depends_on:
-      - otel-collector
+      - rabbitmq
     networks:
-      - microservices
+      - microservices-network
 
-  otel-collector:
-    image: otel/opentelemetry-collector:latest
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+  rabbitmq:
+    image: rabbitmq:3-management
     ports:
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
-      - "8888:8888"   # Prometheus metrics
-      - "8889:8889"   # Prometheus exporter
-      - "13133:13133" # Health check
-      - "55679:55679" # zPages
+      - "5672:5672"
+      - "15672:15672"
     networks:
-      - microservices
+      - microservices-network
 
 networks:
-  microservices:
+  microservices-network:
     driver: bridge 

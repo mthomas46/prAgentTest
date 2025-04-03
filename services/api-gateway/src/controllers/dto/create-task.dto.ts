@@ -30,4 +30,4 @@ export class CreateTaskDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
-} 
+}

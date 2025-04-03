@@ -68,9 +68,7 @@ export class ServiceDiscoveryService {
     }
 
     try {
-      const healthResponse = await firstValueFrom(
-        this.httpService.get(`${service.url}/health`),
-      );
+      const healthResponse = await firstValueFrom(this.httpService.get(`${service.url}/health`));
       const versionResponse = await firstValueFrom(
         this.httpService.get(`${service.url}/health/version`),
       );
@@ -109,4 +107,4 @@ export class ServiceDiscoveryService {
   getAllServices(): ServiceInfo[] {
     return Array.from(this.services.values());
   }
-} 
+}

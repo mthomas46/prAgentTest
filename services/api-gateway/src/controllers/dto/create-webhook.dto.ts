@@ -23,4 +23,4 @@ export class CreateWebhookDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
-} 
+}
