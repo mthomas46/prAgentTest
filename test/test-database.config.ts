@@ -1,16 +1,15 @@
-import { DataSource } from 'typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-export const AppDataSource = new DataSource({
+export const testDatabaseConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5433', 10),
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_DATABASE || 'api_test',
-  synchronize: true, // Be careful with this in production
+  host: process.env.TEST_DB_HOST || 'localhost',
+  port: parseInt(process.env.TEST_DB_PORT || '5432', 10),
+  username: process.env.TEST_DB_USERNAME || 'postgres',
+  password: process.env.TEST_DB_PASSWORD || 'postgres',
+  database: process.env.TEST_DB_DATABASE || 'api_test',
+  entities: ['src/**/*.entity{.ts,.js}'],
+  synchronize: true,
+  dropSchema: true,
   logging: false,
-  entities: ['src/**/*.entity.ts'],
-  migrations: ['src/migrations/*.ts'],
-  subscribers: ['src/subscribers/*.ts'],
-  dropSchema: true, // This will drop all tables before each test run
-});
+  ssl: false,
+};

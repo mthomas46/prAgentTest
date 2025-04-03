@@ -1,174 +1,234 @@
 # API Gateway Service
 
-The API Gateway service acts as the entry point for all client requests, handling routing, authentication, and request/response transformation.
-
-## Features
-
-- 🔐 Authentication and authorization
-- 🚦 Request routing to microservices
-- 📝 Request/response transformation
-- 🔍 Request validation
-- 📊 Rate limiting
-- 🛡️ Security headers
-- 📈 Metrics collection
-- 🎯 Health checks
+## Overview
+The API Gateway serves as the central entry point for all client requests in our microservices architecture. It orchestrates communication between various services and provides a unified API interface.
 
 ## Architecture
 
-```
-api-gateway/
-├── src/
-│   ├── auth/           # Authentication and authorization
-│   ├── controllers/    # Route handlers
-│   ├── dto/           # Data transfer objects
-│   ├── filters/       # Exception filters
-│   ├── guards/        # Route guards
-│   ├── interfaces/    # TypeScript interfaces
-│   ├── middleware/    # Custom middleware
-│   └── services/      # Business logic
-├── test/              # Test files
-└── config/            # Service configuration
-```
+### Service Modules
+The API Gateway integrates several specialized modules:
 
-## Configuration
+1. **Task Module**
+   - Handles task-related operations
+   - Communicates with the task service via RabbitMQ
+   - Implements task CRUD operations, status updates, and assignments
+   - Uses message queues for asynchronous communication
 
-Environment variables:
+2. **Webhook Module**
+   - Manages webhook functionality
+   - Handles incoming webhook requests
+   - Routes webhook events to appropriate services
+   - Implements webhook security and validation
 
-```env
-# Server
-PORT=3002
-NODE_ENV=development
+3. **Monitoring Module**
+   - Provides system observability
+   - Collects metrics and logs
+   - Integrates with Prometheus and Grafana
+   - Offers health check endpoints
 
-# Security
-JWT_SECRET=your-jwt-secret
-API_KEY=your-api-key
+4. **Service Discovery Module**
+   - Manages service registration and discovery
+   - Maintains service health checks
+   - Handles load balancing between service instances
+   - Provides service routing information
 
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+5. **Document Module**
+   - Handles document-related operations
+   - Manages document upload/download
+   - Coordinates document processing
+   - Integrates with document storage services
 
-# CORS
-CORS_ORIGINS=http://localhost:3000,http://localhost:8090
+## Communication Patterns
 
-# Logging
-LOG_LEVEL=info
-```
+### Message Broker Integration
+The API Gateway uses RabbitMQ for asynchronous communication with other services:
 
-## API Routes
-
-### Authentication
-- `POST /auth/login` - User login
-- `POST /auth/register` - User registration
-- `POST /auth/refresh` - Refresh token
-- `POST /auth/logout` - User logout
-
-### Tasks
-- `GET /tasks` - List tasks
-- `POST /tasks` - Create task
-- `GET /tasks/:id` - Get task
-- `PUT /tasks/:id` - Update task
-- `DELETE /tasks/:id` - Delete task
-
-### Documents
-- `GET /documents` - List documents
-- `POST /documents` - Upload document
-- `GET /documents/:id` - Get document
-- `DELETE /documents/:id` - Delete document
-
-### Webhooks
-- `POST /webhooks` - Register webhook
-- `GET /webhooks` - List webhooks
-- `DELETE /webhooks/:id` - Delete webhook
-
-### Health
-- `GET /health` - Service health check
-- `GET /health/live` - Liveness probe
-- `GET /health/ready` - Readiness probe
-
-### Metrics
-- `GET /metrics` - Prometheus metrics
-
-## Development
-
-```bash
-# Installation
-npm install
-
-# Development
-npm run start:dev
-
-# Production
-npm run start:prod
-
-# Tests
-npm run test
-npm run test:e2e
-npm run test:cov
-```
-
-## Dependencies
-
-- NestJS - Web framework
-- Passport - Authentication
-- JWT - Token-based auth
-- class-validator - Request validation
-- class-transformer - Object transformation
-- helmet - Security headers
-- compression - Response compression
-- swagger-ui-express - API documentation
-
-## Error Handling
-
-The service uses a global exception filter that transforms errors into a standard format:
-
-```json
+```typescript
 {
-  "statusCode": 400,
-  "message": "Validation failed",
-  "error": "Bad Request",
-  "details": [
-    {
-      "field": "email",
-      "message": "must be an email"
+  name: 'TASK_SERVICE',
+  transport: Transport.RMQ,
+  options: {
+    urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+    queue: 'task_queue',
+    queueOptions: {
+      durable: false
     }
-  ]
+  }
 }
 ```
 
-## Monitoring
+### Service-to-Service Communication
+- Synchronous: HTTP/REST for direct service calls
+- Asynchronous: RabbitMQ for event-driven communication
+- Service Discovery: Dynamic routing to service instances
 
-- Prometheus metrics at `/metrics`
-- Health checks at `/health`
-- OpenTelemetry tracing
-- ELK Stack logging
+## Configuration
+
+### Environment Variables
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5433
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=api_test
+
+# Application Configuration
+PORT=3002
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:3000,http://localhost:8090
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+LOG_LEVEL=info
+JSON_BODY_LIMIT=10kb
+
+# Webhook Configuration
+WEBHOOK_SECRET=your_webhook_secret_here
+
+# Message Broker
+RABBITMQ_URL=amqp://localhost:5672
+```
+
+## Monitoring and Observability
+
+### Metrics Collection
+- Prometheus metrics endpoint
+- Custom business metrics
+- System performance metrics
+- Service health metrics
+
+### Logging
+- Structured JSON logging
+- Log levels: error, warn, info, debug
+- Context-aware logging
+- Log aggregation with Elasticsearch
+
+### Tracing
+- Distributed tracing
+- Request correlation
+- Performance monitoring
+- Error tracking
 
 ## Security
 
-- JWT authentication
+### Authentication & Authorization
+- JWT-based authentication
 - Role-based access control
-- Rate limiting
-- CORS protection
-- Security headers
-- Request validation
-- API key authentication for service-to-service communication
+- API key authentication
+- Webhook signature verification
 
-## Testing
+### Rate Limiting
+- Global rate limiting
+- Per-route rate limiting
+- IP-based rate limiting
+- User-based rate limiting
 
+## Development
+
+### Prerequisites
+- Node.js 18+
+- Docker and Docker Compose
+- RabbitMQ
+- PostgreSQL
+
+### Setup
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start required services:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Run the application:
+   ```bash
+   npm run start:dev
+   ```
+
+### Testing
 ```bash
-# Unit tests
-npm run test
+# Run unit tests
+npm test
 
-# E2E tests
-npm run test:e2e
-
-# Test coverage
+# Run tests with coverage
 npm run test:cov
+
+# Run e2e tests
+npm run test:e2e
 ```
 
-## Contributing
+## API Documentation
 
-1. Create a feature branch
-2. Make your changes
-3. Write tests
-4. Update documentation
-5. Submit a pull request 
+### Swagger UI
+Access the API documentation at:
+```
+http://localhost:3002/api
+```
+
+### Available Endpoints
+- Task Management
+- Webhook Handling
+- Health Checks
+- Metrics Collection
+- Document Operations
+
+## Deployment
+
+### Docker
+```bash
+docker build -t api-gateway .
+docker run -p 3002:3002 api-gateway
+```
+
+### Kubernetes
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: api-gateway
+        image: api-gateway:latest
+        ports:
+        - containerPort: 3002
+```
+
+## Troubleshooting
+
+### Common Issues
+1. Database Connection Issues
+   - Check database credentials
+   - Verify database is running
+   - Check network connectivity
+
+2. Message Broker Issues
+   - Verify RabbitMQ is running
+   - Check queue configurations
+   - Monitor message processing
+
+3. Service Discovery Issues
+   - Check service registration
+   - Verify health check endpoints
+   - Monitor service availability
+
+### Logs
+Access logs through:
+- Docker logs
+- Kubernetes logs
+- Centralized logging system
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+[Add your license information here] 

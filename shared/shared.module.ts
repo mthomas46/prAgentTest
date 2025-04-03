@@ -12,11 +12,11 @@ import { SharedRabbitMQModule } from './rabbitmq/shared-rabbitmq.module';
 import { SharedRedisModule } from './redis/shared-redis.module';
 import { SharedElasticsearchModule } from './elasticsearch/shared-elasticsearch.module';
 import { SharedPrometheusModule } from './prometheus/shared-prometheus.module';
-import { SharedHealthModule } from './health/shared-health.module';
 import { SharedLoggingModule } from './logging/shared-logging.module';
+import { SharedHealthModule } from './health/shared-health.module';
 import { SharedMiddlewareModule } from './middleware/shared-middleware.module';
-import { SharedInterceptorsModule } from './interceptors/shared-interceptors.module';
 import { SharedGuardsModule } from './guards/shared-guards.module';
+import { SharedInterceptorsModule } from './interceptors/shared-interceptors.module';
 import { SharedFiltersModule } from './filters/shared-filters.module';
 import { SharedPipesModule } from './pipes/shared-pipes.module';
 
@@ -41,11 +41,11 @@ import { SharedPipesModule } from './pipes/shared-pipes.module';
     SharedRedisModule,
     SharedElasticsearchModule,
     SharedPrometheusModule,
-    SharedHealthModule,
     SharedLoggingModule,
+    SharedHealthModule,
     SharedMiddlewareModule,
-    SharedInterceptorsModule,
     SharedGuardsModule,
+    SharedInterceptorsModule,
     SharedFiltersModule,
     SharedPipesModule,
   ],
@@ -56,11 +56,11 @@ import { SharedPipesModule } from './pipes/shared-pipes.module';
     SharedRedisModule,
     SharedElasticsearchModule,
     SharedPrometheusModule,
-    SharedHealthModule,
     SharedLoggingModule,
+    SharedHealthModule,
     SharedMiddlewareModule,
-    SharedInterceptorsModule,
     SharedGuardsModule,
+    SharedInterceptorsModule,
     SharedFiltersModule,
     SharedPipesModule,
   ],

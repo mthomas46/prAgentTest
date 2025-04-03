@@ -1,7 +1,7 @@
 import { createAgent, createActionsFromMcpConfig } from "spinai";
 import { openai } from "@ai-sdk/openai";
 // @ts-ignore
-import mcpConfig from "../mcp-config.ts";
+import mcpConfig from "../mcp-config.js";
 import { analyzeCodeChanges } from "./actions/analyze-code-changes.js";
 import { createReviewComments } from "./actions/create-review-comments.js";
 import { getFileBeforeAfter } from "./actions/get-file-before-after.js";

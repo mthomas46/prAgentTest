@@ -1,13 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { SharedConfigService } from '../config/shared.config';
 
 @Injectable()
 export class SharedAuthGuard implements CanActivate {
-  private readonly logger = new Logger(SharedAuthGuard.name);
-
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: SharedConfigService,
+  ) {}
 
   canActivate(
     context: ExecutionContext,
@@ -16,16 +17,16 @@ export class SharedAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      this.logger.warn('No token provided');
       return false;
     }
 
     try {
-      // Add your token validation logic here
-      // For example, using JWT verification
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.jwtConfig.secret,
+      });
+      request.user = payload;
       return true;
-    } catch (error) {
-      this.logger.error('Token validation failed', error);
+    } catch {
       return false;
     }
   }

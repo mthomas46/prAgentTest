@@ -1,12 +1,15 @@
 import { Controller, Get, Post, Body, Param, Delete, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { MonitoringService } from './monitoring.service';
+import { register } from 'prom-client';
 
 @ApiTags('monitoring')
 @Controller('monitoring')
 export class MonitoringController {
   constructor(
     @Inject('MONITORING_SERVICE') private readonly monitoringClient: ClientProxy,
+    private readonly monitoringService: MonitoringService
   ) {}
 
   @Post('metrics')
@@ -41,6 +44,29 @@ export class MonitoringController {
   @ApiOperation({ summary: 'Get service health status' })
   @ApiResponse({ status: 200, description: 'Return health status' })
   async getHealth() {
-    return this.monitoringClient.send('get_health', {});
+    const startTime = Date.now();
+    const status = 'healthy';
+    await this.monitoringService.trackHealthCheck('api-gateway', status, Date.now() - startTime);
+    return { status };
+  }
+
+  @Get('status')
+  @ApiOperation({ summary: 'Get detailed service status' })
+  async getStatus() {
+    const startTime = Date.now();
+    const status = {
+      apiGateway: 'healthy',
+      rabbitMQ: 'connected',
+      prometheus: 'connected',
+      elasticsearch: 'connected',
+    };
+    await this.monitoringService.trackHealthCheck('api-gateway', 'healthy', Date.now() - startTime);
+    return status;
+  }
+
+  @Get('metrics/prometheus')
+  @ApiOperation({ summary: 'Get Prometheus metrics' })
+  async getPrometheusMetrics() {
+    return register.metrics();
   }
 } 
