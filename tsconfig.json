@@ -26,7 +26,10 @@
       "@test/*": ["test/*"],
       "@shared/*": ["shared/*"],
       "@services/*": ["services/*"]
-    }
+    },
+    "types": ["node"],
+    "lib": ["es2022"],
+    "isolatedModules": true
   },
   "include": ["src/**/*", "test/**/*", "shared/**/*", "services/**/*"],
   "exclude": ["node_modules", "dist"]

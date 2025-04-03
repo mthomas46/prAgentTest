@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('TaskService');
@@ -20,6 +21,7 @@ async function bootstrap() {
 
   // Enable validation
   app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen();
   logger.log('Task service is running');

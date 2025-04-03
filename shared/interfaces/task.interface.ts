@@ -1,9 +1,4 @@
-export enum TaskStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
-}
+import { TaskStatus } from '../enums/task-status.enum';
 
 export enum TaskPriority {
   LOW = 'low',
@@ -37,4 +32,4 @@ export interface ICreateTaskDto {
   completed?: boolean;
 }
 
-export interface IUpdateTaskDto extends Partial<ICreateTaskDto> {} 
+export interface IUpdateTaskDto extends Partial<ICreateTaskDto> {}

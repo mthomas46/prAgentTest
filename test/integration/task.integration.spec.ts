@@ -1,3 +1,5 @@
+/// <reference types="jest" />
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -5,11 +7,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Task } from '../../services/task-service/src/entities/task.entity';
 import { EventPublisherService } from '../../shared/services/event-publisher.service';
 import { EventType } from '../../shared/interfaces/events.interface';
-import { TaskStatus } from '../../shared/interfaces/task.interface';
+import { TaskStatus } from '../../shared/enums/task-status.enum';
 import { TaskModule } from '../../services/task-service/src/task.module';
 import { TaskController } from '../../services/task-service/src/task.controller';
 import { TaskService } from '../../services/task-service/src/task.service';
 import { DataSource } from 'typeorm';
+import { testDatabaseConfig } from '../test-database.config';
 
 describe('TaskController (e2e)', () => {
   let app: INestApplication;
@@ -21,15 +24,21 @@ describe('TaskController (e2e)', () => {
   };
 
   beforeAll(async () => {
+    // Initialize the database connection
+    dataSource = new DataSource({
+      ...testDatabaseConfig,
+      migrations: ['src/migrations/*.ts'],
+      migrationsRun: true,
+    });
+    await dataSource.initialize();
+    await dataSource.runMigrations();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
-          type: 'sqlite',
-          database: ':memory:',
-          entities: [Task],
-          synchronize: true,
-          dropSchema: true,
-          logging: false,
+          ...testDatabaseConfig,
+          migrations: ['src/migrations/*.ts'],
+          migrationsRun: false, // We already ran migrations
         }),
         TypeOrmModule.forFeature([Task]),
       ],
@@ -45,11 +54,7 @@ describe('TaskController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     eventPublisher = moduleFixture.get<EventPublisherService>(EventPublisherService);
-    dataSource = moduleFixture.get<DataSource>(DataSource);
     await app.init();
-
-    // Ensure database is synchronized
-    await dataSource.synchronize(true);
   });
 
   beforeEach(async () => {
@@ -59,9 +64,12 @@ describe('TaskController (e2e)', () => {
       const repository = dataSource.getRepository(entity.name);
       await repository.clear();
     }
+    // Reset mock calls
+    mockEventPublisher.publishTaskEvent.mockClear();
   });
 
   afterAll(async () => {
+    // Clean up
     await dataSource.destroy();
     await app.close();
   });
@@ -233,35 +241,56 @@ describe('TaskController (e2e)', () => {
 
   describe('/tasks/:id/restore (POST)', () => {
     it('should restore a soft deleted task and publish event', async () => {
-      // Create a task
       const createResponse = await request(app.getHttpServer())
         .post('/tasks')
-        .send({ title: 'Task 1', description: 'Description 1' })
-        .expect(201);
+        .send({ title: 'Task 1', description: 'Description 1' });
 
-      // Delete the task
       await request(app.getHttpServer())
-        .delete(`/tasks/${createResponse.body.id}`)
-        .expect(200);
+        .delete(`/tasks/${createResponse.body.id}`);
 
-      // Restore the task
       const response = await request(app.getHttpServer())
         .post(`/tasks/${createResponse.body.id}/restore`)
         .expect(200);
 
-      expect(response.body.deletedAt).toBeNull();
+      expect(response.body.title).toBe('Task 1');
+      expect(response.body.description).toBe('Description 1');
 
-      expect(eventPublisher.publishTaskEvent).toHaveBeenCalledWith(
-        EventType.TASK_RESTORED,
-        response.body.id,
-        expect.objectContaining({
-          title: 'Task 1',
-          description: 'Description 1'
-        }),
-        expect.objectContaining({
-          deletedAt: expect.any(String)
-        })
-      );
+      // Verify the event publishing sequence
+      expect(mockEventPublisher.publishTaskEvent).toHaveBeenCalledTimes(3);
+      
+      const calls = mockEventPublisher.publishTaskEvent.mock.calls;
+
+      // First call: TASK_CREATED
+      expect(calls[0][0]).toBe(EventType.TASK_CREATED);
+      expect(calls[0][1]).toBe(createResponse.body.id);
+      expect(calls[0][2]).toMatchObject({
+        title: 'Task 1',
+        description: 'Description 1',
+        deletedAt: null
+      });
+
+      // Second call: TASK_DELETED
+      expect(calls[1][0]).toBe(EventType.TASK_DELETED);
+      expect(calls[1][1]).toBe(createResponse.body.id);
+      expect(calls[1][2]).toMatchObject({
+        title: 'Task 1',
+        description: 'Description 1'
+      });
+      expect(calls[1][2].deletedAt).toBeTruthy();
+
+      // Third call: TASK_RESTORED
+      expect(calls[2][0]).toBe(EventType.TASK_RESTORED);
+      expect(calls[2][1]).toBe(createResponse.body.id);
+      expect(calls[2][2]).toMatchObject({
+        title: 'Task 1',
+        description: 'Description 1',
+        deletedAt: null
+      });
+      expect(calls[2][3]).toMatchObject({
+        title: 'Task 1',
+        description: 'Description 1'
+      });
+      expect(calls[2][3].deletedAt).toBeTruthy();
     });
 
     it('should return 404 when task not found', async () => {

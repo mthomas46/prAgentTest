@@ -1,27 +1,27 @@
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import { testDatabaseConfig } from './test-database.config';
+import '@jest/globals';
 
 let app: any;
 let dataSource: DataSource;
 
 beforeAll(async () => {
-  // Only initialize database if DB_ENABLED is true
-  if (process.env.DB_ENABLED === 'true') {
-    dataSource = new DataSource({
-      type: 'postgres',
-      host: process.env.DB_HOST ? process.env.DB_HOST : 'localhost',
-      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
-      username: process.env.DB_USERNAME ? process.env.DB_USERNAME : 'postgres',
-      password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : 'postgres',
-      database: process.env.DB_DATABASE ? process.env.DB_DATABASE : 'api_test',
-      entities: ['src/**/*.entity{.ts,.js}'],
-      synchronize: true,
-      dropSchema: true,
-      logging: false,
-    } as any);
-    await dataSource.initialize();
-  }
+  dataSource = new DataSource({
+    type: 'postgres',
+    host: testDatabaseConfig.host,
+    port: testDatabaseConfig.port,
+    username: testDatabaseConfig.username,
+    password: testDatabaseConfig.password,
+    database: testDatabaseConfig.database,
+    entities: testDatabaseConfig.entities,
+    migrations: ['src/migrations/*.ts'],
+    migrationsRun: true,
+    logging: false,
+  });
+  await dataSource.initialize();
+  await dataSource.runMigrations();
 
   const moduleRef = await Test.createTestingModule({
     imports: [],
@@ -59,7 +59,11 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (dataSource) {
+    await dataSource.undoLastMigration();
     await dataSource.destroy();
   }
   await app.close();
 });
+
+// Set test timeout
+jest.setTimeout(30000);

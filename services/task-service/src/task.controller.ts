@@ -1,39 +1,46 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, Get, Post, Body, Param, Delete, Patch, HttpCode, HttpStatus, UseFilters } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { ICreateTaskDto, IUpdateTaskDto } from '../../../shared/interfaces/task.interface';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 
-@Controller()
+@Controller('tasks')
+@UseFilters(new HttpExceptionFilter())
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @MessagePattern({ cmd: 'createTask' })
-  async create(@Payload() createTaskDto: ICreateTaskDto) {
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() createTaskDto: ICreateTaskDto) {
     return await this.taskService.create(createTaskDto);
   }
 
-  @MessagePattern({ cmd: 'findAllTasks' })
+  @Get()
+  @HttpCode(HttpStatus.OK)
   async findAll() {
     return await this.taskService.findAll();
   }
 
-  @MessagePattern({ cmd: 'findOneTask' })
-  async findOne(@Payload() id: string) {
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string) {
     return await this.taskService.findOne(id);
   }
 
-  @MessagePattern({ cmd: 'updateTask' })
-  async update(@Payload() payload: { id: string; updateTaskDto: IUpdateTaskDto }) {
-    return await this.taskService.update(payload.id, payload.updateTaskDto);
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('id') id: string, @Body() updateTaskDto: IUpdateTaskDto) {
+    return await this.taskService.update(id, updateTaskDto);
   }
 
-  @MessagePattern({ cmd: 'deleteTask' })
-  async delete(@Payload() id: string) {
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async delete(@Param('id') id: string) {
     return await this.taskService.delete(id);
   }
 
-  @MessagePattern({ cmd: 'restoreTask' })
-  async restore(@Payload() id: string) {
+  @Post(':id/restore')
+  @HttpCode(HttpStatus.OK)
+  async restore(@Param('id') id: string) {
     return await this.taskService.restore(id);
   }
 } 

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
-import { ITask, TaskStatus } from '../../../shared/interfaces/task.interface';
+import { ITask } from '../../../shared/interfaces/task.interface';
+import { TaskStatus } from '../../../shared/enums/task-status.enum';
 
 export enum TaskPriority {
   LOW = 'low',

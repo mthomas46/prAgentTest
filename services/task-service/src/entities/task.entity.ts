@@ -1,15 +1,15 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskStatus } from '../../../../shared/interfaces/task.interface';
+import { TaskStatus } from '../../../../shared/enums/task-status.enum';
 
-@Entity('tasks')
+@Entity('task')
 export class Task {
   @ApiProperty({
     description: 'The unique identifier of the task',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @ApiProperty({
     description: 'The title of the task',
@@ -23,7 +23,7 @@ export class Task {
     example: 'Implement JWT-based authentication with refresh tokens',
     nullable: true,
   })
-  @Column({ type: 'text', nullable: true })
+  @Column({ nullable: true })
   description: string;
 
   @ApiProperty({
@@ -32,7 +32,11 @@ export class Task {
     example: TaskStatus.PENDING,
     default: TaskStatus.PENDING,
   })
-  @Column({ default: 'pending' })
+  @Column({
+    type: 'enum',
+    enum: TaskStatus,
+    default: TaskStatus.PENDING
+  })
   status: TaskStatus;
 
   @ApiProperty({
@@ -40,7 +44,7 @@ export class Task {
     example: '123e4567-e89b-12d3-a456-426614174000',
     nullable: true,
   })
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ nullable: true })
   assignedTo: string;
 
   @ApiProperty({
