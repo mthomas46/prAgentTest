@@ -1,155 +1,161 @@
-module Frontpage exposing (..)
+module Frontpage exposing (main)
 
+import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as Decode
-import Time
+import Json.Decode as D
+import Time exposing (Posix)
 
+-- MAIN
+main : Program Flags Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
-type alias ServiceInfo =
-    { name : String
+-- MODEL
+type alias Flags =
+    { serviceName : String
     , version : String
-    , status : String
-    , timestamp : String
-    , uptime : Float
+    , environment : String
     }
 
-
 type alias Model =
-    { serviceInfo : Maybe ServiceInfo
+    { serviceName : String
+    , version : String
+    , environment : String
+    , services : List Service
     , error : Maybe String
     }
 
+type alias Service =
+    { name : String
+    , description : String
+    , url : String
+    , swaggerUrl : String
+    , isAvailable : Bool
+    }
 
-type Msg
-    = GotServiceInfo (Result Http.Error ServiceInfo)
-    | Tick Time.Posix
-
-
-init : String -> ( Model, Cmd Msg )
-init serviceName =
-    ( { serviceInfo = Nothing, error = Nothing }
-    , getServiceInfo serviceName
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    ( { serviceName = flags.serviceName
+      , version = flags.version
+      , environment = flags.environment
+      , services = defaultServices
+      , error = Nothing
+      }
+    , Cmd.none
     )
 
+defaultServices : List Service
+defaultServices =
+    [ { name = "Task Service"
+      , description = "Manages tasks and their lifecycle"
+      , url = "http://localhost:3000"
+      , swaggerUrl = "http://localhost:3000/api"
+      , isAvailable = True
+      }
+    , { name = "Balder Service"
+      , description = "Frontend service with service directory"
+      , url = "http://localhost:3002"
+      , swaggerUrl = "http://localhost:3002/api-docs"
+      , isAvailable = True
+      }
+    , { name = "Webhook Service"
+      , description = "Handles webhook events and notifications"
+      , url = "http://localhost:3003"
+      , swaggerUrl = "http://localhost:3003"
+      , isAvailable = True
+      }
+    , { name = "Heimdal Service"
+      , description = "Authentication and authorization service (Coming soon)"
+      , url = "#"
+      , swaggerUrl = "#"
+      , isAvailable = False
+      }
+    ]
+
+-- UPDATE
+type Msg
+    = NoOp
+    | Tick Time.Posix
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotServiceInfo result ->
-            case result of
-                Ok info ->
-                    ( { model | serviceInfo = Just info, error = Nothing }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( { model | error = Just "Failed to fetch service info" }
-                    , Cmd.none
-                    )
-
+        NoOp ->
+            ( model, Cmd.none )
+        
         Tick _ ->
-            ( model
-            , getServiceInfo (model.serviceInfo |> Maybe.map .name |> Maybe.withDefault "")
-            )
+            ( model, Cmd.none )
 
+-- SUBSCRIPTIONS
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Time.every 5000 Tick
 
+-- VIEW
 view : Model -> Html Msg
 view model =
-    div [ class "min-h-screen bg-gray-100" ]
-        [ div [ class "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" ]
-            [ div [ class "px-4 py-6 sm:px-0" ]
-                [ div [ class "bg-white overflow-hidden shadow rounded-lg" ]
-                    [ div [ class "px-4 py-5 sm:p-6" ]
-                        [ h1 [ class "text-2xl font-bold text-gray-900 mb-4" ]
-                            [ text "Service Dashboard" ]
-                        , case model.serviceInfo of
-                            Just info ->
-                                viewServiceInfo info
-
-                            Nothing ->
-                                case model.error of
-                                    Just error ->
-                                        div [ class "text-red-600" ] [ text error ]
-
-                                    Nothing ->
-                                        div [ class "text-gray-600" ] [ text "Loading..." ]
-                        , viewLinks
-                        ]
-                    ]
-                ]
-            ]
+    div [ class "container mx-auto px-4 py-8" ]
+        [ viewHeader model
+        , viewServices model.services
         ]
 
-
-viewServiceInfo : ServiceInfo -> Html Msg
-viewServiceInfo info =
-    div [ class "space-y-4" ]
-        [ div [ class "grid grid-cols-2 gap-4" ]
-            [ div []
-                [ h2 [ class "text-lg font-medium text-gray-900" ] [ text "Service Information" ]
-                , dl [ class "mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2" ]
-                    [ div [ class "px-4 py-5 bg-gray-50 shadow rounded-lg overflow-hidden sm:p-6" ]
-                        [ dt [ class "text-sm font-medium text-gray-500 truncate" ] [ text "Name" ]
-                        , dd [ class "mt-1 text-3xl font-semibold text-gray-900" ] [ text info.name ]
-                        ]
-                    , div [ class "px-4 py-5 bg-gray-50 shadow rounded-lg overflow-hidden sm:p-6" ]
-                        [ dt [ class "text-sm font-medium text-gray-500 truncate" ] [ text "Version" ]
-                        , dd [ class "mt-1 text-3xl font-semibold text-gray-900" ] [ text info.version ]
-                        ]
-                    ]
-                ]
-            , div []
-                [ h2 [ class "text-lg font-medium text-gray-900" ] [ text "Health Status" ]
-                , dl [ class "mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2" ]
-                    [ div [ class "px-4 py-5 bg-gray-50 shadow rounded-lg overflow-hidden sm:p-6" ]
-                        [ dt [ class "text-sm font-medium text-gray-500 truncate" ] [ text "Status" ]
-                        , dd [ class "mt-1 text-3xl font-semibold text-green-600" ] [ text info.status ]
-                        ]
-                    , div [ class "px-4 py-5 bg-gray-50 shadow rounded-lg overflow-hidden sm:p-6" ]
-                        [ dt [ class "text-sm font-medium text-gray-500 truncate" ] [ text "Uptime" ]
-                        , dd [ class "mt-1 text-3xl font-semibold text-gray-900" ] [ text (String.fromFloat info.uptime ++ "s") ]
-                        ]
-                    ]
-                ]
-            ]
+viewHeader : Model -> Html Msg
+viewHeader model =
+    div [ class "mb-8 text-center" ]
+        [ h1 [ class "text-4xl font-bold text-gray-900 mb-2" ]
+            [ text model.serviceName ]
+        , p [ class "text-gray-600" ]
+            [ text ("Version: " ++ model.version ++ " | Environment: " ++ model.environment) ]
         ]
 
+viewServices : List Service -> Html Msg
+viewServices services =
+    div [ class "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" ]
+        (List.map viewServiceCard services)
 
-viewLinks : Html Msg
-viewLinks =
-    div [ class "mt-8" ]
-        [ h2 [ class "text-lg font-medium text-gray-900 mb-4" ] [ text "Quick Links" ]
-        , div [ class "grid grid-cols-1 gap-4 sm:grid-cols-2" ]
-            [ a
-                [ href "/api-docs"
-                , class "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-                ]
-                [ text "Swagger Documentation" ]
-            , a
-                [ href "/"
-                , class "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
-                ]
-                [ text "Main Application" ]
+viewServiceCard : Service -> Html Msg
+viewServiceCard service =
+    div [ class "service-card" ]
+        [ div [ class "flex justify-between items-start mb-4" ]
+            [ h2 [ class "text-xl font-semibold text-gray-900" ]
+                [ text service.name ]
+            , if service.isAvailable then
+                a [ href service.swaggerUrl
+                  , target "_blank"
+                  , class "text-blue-600 hover:text-blue-800"
+                  ]
+                  [ i [ class "fas fa-book mr-1" ] []
+                  , text "API Docs"
+                  ]
+              else
+                span [ class "text-gray-400" ]
+                  [ i [ class "fas fa-book mr-1" ] []
+                  , text "API Docs"
+                  ]
             ]
-        ]
-
-
-getServiceInfo : String -> Cmd Msg
-getServiceInfo serviceName =
-    Http.get
-        { url = "/health"
-        , expect = Http.expectJson GotServiceInfo serviceInfoDecoder
-        }
-
-
-serviceInfoDecoder : Decode.Decoder ServiceInfo
-serviceInfoDecoder =
-    Decode.map5 ServiceInfo
-        (Decode.field "name" Decode.string)
-        (Decode.field "version" Decode.string)
-        (Decode.field "status" Decode.string)
-        (Decode.field "timestamp" Decode.string)
-        (Decode.field "uptime" Decode.float) 
+        , p [ class "text-gray-600 mb-4" ]
+            [ text service.description ]
+        , div [ class "flex justify-between items-center" ]
+            [ if service.isAvailable then
+                a [ href service.url
+                  , target "_blank"
+                  , class "text-blue-600 hover:text-blue-800"
+                  ]
+                  [ i [ class "fas fa-external-link-alt mr-1" ] []
+                  , text "Visit Service"
+                  ]
+              else
+                span [ class "text-gray-400" ]
+                  [ i [ class "fas fa-external-link-alt mr-1" ] []
+                  , text "Visit Service"
+                  ]
+            ]
+        ] 

@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import axios from 'axios';
 import cors from 'cors';
 import { promisify } from 'util';
+import YAML from 'yamljs';
 
 const execAsync = promisify(exec);
 const app = express();
@@ -13,7 +14,7 @@ const TASK_SERVICE_URL = process.env.TASK_SERVICE_URL || 'http://task-service:30
 const version = process.env.npm_package_version || '1.0.0';
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     const allowedOrigins = [
       // Docker internal hostnames
       'http://task-service:3000',
@@ -42,167 +43,31 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Load Swagger document
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
+
+// Serve Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Serve Swagger JSON
+app.get('/api-json', (req, res) => {
+  res.json(swaggerDocument);
+});
+
 // Serve static files from the public directory
-app.use(express.static(path.join(__dirname, '../../public'), {
+app.use(express.static(path.join(__dirname, '../public'), {
   index: 'index.html'
 }));
 
-// Swagger configuration
-const swaggerDocument = {
-  openapi: '3.0.0',
-  info: {
-    title: 'Balder Service API',
-    version: '1.0.0',
-    description: 'API documentation for the Balder service'
-  },
-  servers: [
-    {
-      url: `http://localhost:${port}`,
-      description: 'Local development server'
-    },
-    {
-      url: 'http://balder:3002',
-      description: 'Docker service'
-    }
-  ],
-  paths: {
-    '/api/tasks': {
-      get: {
-        summary: 'Get all tasks',
-        responses: {
-          '200': {
-            description: 'List of tasks',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      id: { type: 'number' },
-                      title: { type: 'string' },
-                      description: { type: 'string' },
-                      status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'COMPLETED'] },
-                      createdAt: { type: 'string', format: 'date-time' },
-                      updatedAt: { type: 'string', format: 'date-time' }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          '500': {
-            description: 'Server error'
-          }
-        }
-      },
-      post: {
-        summary: 'Create a new task',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' }
-                },
-                required: ['title']
-              }
-            }
-          }
-        },
-        responses: {
-          '201': {
-            description: 'Task created successfully'
-          },
-          '500': {
-            description: 'Server error'
-          }
-        }
-      }
-    },
-    '/api/tasks/{id}': {
-      delete: {
-        summary: 'Delete a task',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: {
-              type: 'number'
-            }
-          }
-        ],
-        responses: {
-          '204': {
-            description: 'Task deleted successfully'
-          },
-          '404': {
-            description: 'Task not found'
-          },
-          '500': {
-            description: 'Server error'
-          }
-        }
-      }
-    },
-    '/health': {
-      get: {
-        summary: 'Health check endpoint',
-        responses: {
-          '200': {
-            description: 'Service health status',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    status: { type: 'string' },
-                    timestamp: { type: 'string', format: 'date-time' },
-                    uptime: { type: 'number' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    '/version': {
-      get: {
-        summary: 'Get service version',
-        responses: {
-          '200': {
-            description: 'Service version information',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    version: { type: 'string' },
-                    service: { type: 'string' },
-                    environment: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
-
-// Serve Swagger UI and JSON
-app.get('/api-json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerDocument);
+// Serve the compiled Elm file
+app.get('/elm.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/elm.js'));
 });
 
-app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Directory route
+app.get('/directory', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // API routes
 app.get('/api/tasks', async (req, res) => {
@@ -389,9 +254,9 @@ app.post('/shutdown', (req, res) => {
   }
 });
 
-// Serve the main HTML file for all routes
+// Catch-all route for frontend
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.listen(port, () => {
