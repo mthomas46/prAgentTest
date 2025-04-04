@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  draupnir_internal:
+    build: .
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - GATEWAY_URL=http://gateway:3000
+      - CORE_SERVICES_URL=http://core-services:3005
+    networks:
+      - draupnir_internal_network
+    depends_on:
+      - gateway
+      - core-services
+
+  gateway:
+    image: gateway:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - draupnir_internal_network
+
+  core-services:
+    image: core-services:latest
+    ports:
+      - "3005:3005"
+    networks:
+      - draupnir_internal_network
+
+volumes:
+  draupnir-internal-logs:
+    driver: local
+
+networks:
+  draupnir_internal_network:
+    driver: bridge 

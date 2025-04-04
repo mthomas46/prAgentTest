@@ -1,74 +1,88 @@
 version: '3.8'
 
 services:
-  task-service:
+  draupnir_external:
     build:
-      context: ./services/task-service
+      context: ./services/draupnir_external
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3003:3003"
     environment:
       - NODE_ENV=development
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
+      - PORT=3003
+    volumes:
+      - ./services/draupnir_external/logs:/app/logs
     networks:
-      - yggdrasil_network
+      - draupnir_network
+
+  draupnir_internal:
+    build:
+      context: ./services/draupnir_internal
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - GATEWAY_URL=http://task-service:3000
+      - CORE_SERVICES_URL=http://localhost:3005
+    volumes:
+      - ./services/draupnir_internal/logs:/app/logs
+    networks:
+      - draupnir_network
     depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+      - task-service
 
   postgres:
     image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
     ports:
       - "5433:5432"
-    networks:
-      - yggdrasil_network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=task_service
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - draupnir_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
 
   loki:
     image: grafana/loki:2.8.0
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
-    volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
-      - loki_data:/tmp/loki
-      - loki_rules:/loki/rules
-    user: root
-    restart: unless-stopped
+    networks:
+      - draupnir_network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3100/ready || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  task-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/task_service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - draupnir_network
+
+networks:
+  draupnir_network:
+    driver: bridge
 
 volumes:
   postgres_data:
@@ -76,8 +90,3 @@ volumes:
   elasticsearch_data:
   loki_data:
   loki_rules:
-
-networks:
-  default:
-    driver: bridge
-  yggdrasil_network:
