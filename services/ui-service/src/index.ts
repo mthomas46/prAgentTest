@@ -12,7 +12,21 @@ const port = process.env.PORT || 3002;
 const TASK_SERVICE_URL = process.env.TASK_SERVICE_URL || 'http://task-service:3000';
 const version = process.env.npm_package_version || '1.0.0';
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    'http://localhost:3004',
+    'http://task-service:3000',
+    'http://balder:3002',
+    'http://webhook-service:3003',
+    'http://heimdal:3004'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-brokkr-token'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve static files from the public directory

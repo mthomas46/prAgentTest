@@ -93,6 +93,43 @@ services:
           cpus: '0.25'
           memory: 256M
 
+  webhook-service:
+    build:
+      context: ./services/webhook-service
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - TASK_SERVICE_URL=http://task-service:3000
+      - BALDER_URL=http://balder:3002
+      - HEIMDAL_URL=http://heimdal:3003
+      - BROKKR_TOKEN=brokkr-secure-token-123
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=webhook
+    depends_on:
+      - task-service
+      - balder
+      - heimdal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   postgres:
     image: postgres:16
     ports:

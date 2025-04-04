@@ -16,6 +16,7 @@ FROM node:18-alpine
 WORKDIR /usr/src/app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
 COPY package*.json ./
 
 # Install curl for healthcheck
@@ -23,10 +24,10 @@ RUN apk add --no-cache curl
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=4000
+ENV PORT=3002
 
 # Expose the port
-EXPOSE 4000
+EXPOSE 3002
 
 # Start the application
 CMD ["npm", "start"] 

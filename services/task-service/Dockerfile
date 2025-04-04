@@ -13,6 +13,9 @@ COPY . .
 
 RUN npm run build
 
+# Copy public directory to dist
+RUN mkdir -p dist/public && cp -r public/* dist/public/
+
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 

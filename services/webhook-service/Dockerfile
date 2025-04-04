@@ -2,15 +2,12 @@
 FROM node:18-alpine AS dependencies
 WORKDIR /app
 COPY package*.json ./
-COPY shared/package*.json ./shared/
 RUN npm install --legacy-peer-deps
-RUN cd shared && npm install --legacy-peer-deps
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/shared/node_modules ./shared/node_modules
 COPY . .
 RUN npm run build
 
@@ -19,7 +16,7 @@ FROM node:18-alpine
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/shared/node_modules ./shared/node_modules
+COPY --from=builder /app/public ./public
 COPY package*.json ./
 
 # Install curl for healthcheck

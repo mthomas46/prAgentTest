@@ -12,11 +12,40 @@ const port = process.env.PORT || 3002;
 const TASK_SERVICE_URL = process.env.TASK_SERVICE_URL || 'http://task-service:3000';
 const version = process.env.npm_package_version || '1.0.0';
 
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      // Docker internal hostnames
+      'http://task-service:3000',
+      'http://balder:3002',
+      'http://webhook-service:3003',
+      'http://heimdal:3004',
+      // Localhost access
+      'http://localhost:3000',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004'
+    ];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-brokkr-token'],
+  exposedHeaders: ['Access-Control-Allow-Origin'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+}));
 app.use(express.json());
 
 // Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public'), {
+  index: 'index.html'
+}));
 
 // Serve Swagger UI
 const swaggerOptions = {

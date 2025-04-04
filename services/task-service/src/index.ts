@@ -6,10 +6,110 @@ import { Task, TaskStatus } from './entities/task.entity';
 import rateLimit from 'express-rate-limit';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import path from 'path';
+import swaggerUi from 'swagger-ui-express';
 
 const execAsync = promisify(exec);
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Swagger configuration
+const swaggerDocument = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Task Service API',
+    version: '1.0.0',
+    description: 'API documentation for the Task service'
+  },
+  servers: [
+    {
+      url: `http://localhost:${port}`,
+      description: 'Local development server'
+    }
+  ],
+  paths: {
+    '/tasks': {
+      get: {
+        summary: 'Get all tasks',
+        responses: {
+          '200': {
+            description: 'List of tasks',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'number' },
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'COMPLETED'] },
+                      createdAt: { type: 'string', format: 'date-time' },
+                      updatedAt: { type: 'string', format: 'date-time' }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Server error'
+          }
+        }
+      }
+    },
+    '/health': {
+      get: {
+        summary: 'Health check endpoint',
+        responses: {
+          '200': {
+            description: 'Service health status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string' },
+                    timestamp: { type: 'string', format: 'date-time' },
+                    uptime: { type: 'number' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/version': {
+      get: {
+        summary: 'Get service version',
+        responses: {
+          '200': {
+            description: 'Service version information',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    version: { type: 'string' },
+                    service: { type: 'string' },
+                    environment: { type: 'string' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -18,7 +118,34 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      // Docker internal hostnames
+      'http://task-service:3000',
+      'http://balder:3002',
+      'http://webhook-service:3003',
+      'http://heimdal:3004',
+      // Localhost access
+      'http://localhost:3000',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:3004'
+    ];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-brokkr-token'],
+  exposedHeaders: ['Access-Control-Allow-Origin'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+}));
 app.use(express.json({ limit: '10kb' })); // Limit request body size
 
 // Input validation middleware
