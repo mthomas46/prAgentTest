@@ -4,10 +4,11 @@
   "description": "A simple task management service",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn src/index.ts",
-    "test": "jest"
+    "build": "node scripts/check-node-version.js && tsc",
+    "start": "node scripts/check-node-version.js && node dist/index.js",
+    "dev": "node scripts/check-node-version.js && ts-node-dev --respawn src/index.ts",
+    "test": "node scripts/check-node-version.js && jest",
+    "check-node": "node scripts/check-node-version.js"
   },
   "engines": {
     "node": ">=18.0.0"
