@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: Loki Service API
+  description: API for the Loki logging and monitoring service
+  version: 1.0.0
+servers:
+  - url: http://localhost:3005
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Check service health
+      description: Returns the health status of the service
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+  /version:
+    get:
+      summary: Get service version
+      description: Returns the current version of the service
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.0.0" 

@@ -7,16 +7,22 @@ import { HeimdalService } from '../services/test.service';
 export class HeimdalController {
   constructor(private readonly heimdalService: HeimdalService) {}
 
-  @Get('health/:service')
-  @ApiOperation({ summary: 'Check health of a specific service' })
-  @ApiResponse({ status: 200, description: 'Service health status and version' })
-  async checkServiceHealth(@Param('service') serviceName: string) {
-    return this.heimdalService.checkServiceHealth(serviceName);
+  @Get('health')
+  @ApiOperation({ summary: 'Check health of Heimdal service' })
+  @ApiResponse({ status: 200, description: 'Heimdal service health status' })
+  async checkHeimdalHealth() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      service: 'heimdal',
+      version: '1.0.0'
+    };
   }
 
-  @Get('health')
+  @Get('services/health')
   @ApiOperation({ summary: 'Check health of all services' })
-  @ApiResponse({ status: 200, description: 'Health status and versions of all services' })
+  @ApiResponse({ status: 200, description: 'Health status of all services' })
   async checkAllServicesHealth() {
     return this.heimdalService.checkAllServicesHealth();
   }

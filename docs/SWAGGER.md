@@ -1,6 +1,187 @@
-# Swagger Documentation
+# 📚 Swagger Documentation
 
-This document provides information about the Swagger/OpenAPI documentation available for each service in the system.
+## 📋 Overview
+This document provides comprehensive information about the Swagger/OpenAPI documentation for our microservices architecture.
+
+## 🎯 Purpose
+- Provide interactive API documentation
+- Enable API testing through the Swagger UI
+- Generate client SDKs
+- Validate API requests and responses
+
+## 🔧 Configuration
+
+### 📦 Dependencies
+```json
+{
+  "@nestjs/swagger": "^7.0.0",
+  "swagger-ui-express": "^4.6.0"
+}
+```
+
+### ⚙️ Setup
+1. Install dependencies:
+```bash
+npm install @nestjs/swagger swagger-ui-express
+```
+
+2. Configure Swagger in `main.ts`:
+```typescript
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+const config = new DocumentBuilder()
+  .setTitle('Microservices API')
+  .setDescription('API documentation for the microservices architecture')
+  .setVersion('1.0')
+  .addTag('tasks')
+  .addTag('users')
+  .addTag('auth')
+  .build();
+
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('api-docs', app, document);
+```
+
+## 📝 API Documentation
+
+### 🔐 Authentication
+- JWT Bearer token authentication
+- OAuth2 support
+- API key authentication
+
+### 📡 Endpoints
+
+#### Tasks Service
+```typescript
+@ApiTags('tasks')
+@Controller('tasks')
+export class TasksController {
+  @Get()
+  @ApiOperation({ summary: 'Get all tasks' })
+  @ApiResponse({ status: 200, description: 'Return all tasks' })
+  async findAll() {
+    // Implementation
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new task' })
+  @ApiResponse({ status: 201, description: 'Task created successfully' })
+  async create(@Body() createTaskDto: CreateTaskDto) {
+    // Implementation
+  }
+}
+```
+
+#### Users Service
+```typescript
+@ApiTags('users')
+@Controller('users')
+export class UsersController {
+  @Get()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Return all users' })
+  async findAll() {
+    // Implementation
+  }
+}
+```
+
+## 🎨 Swagger UI Customization
+
+### 🎯 Custom Theme
+```typescript
+SwaggerModule.setup('api-docs', app, document, {
+  customSiteTitle: 'Microservices API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    persistAuthorization: true,
+    docExpansion: 'list',
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+  },
+});
+```
+
+### 📱 Responsive Design
+- Mobile-friendly interface
+- Collapsible sections
+- Search functionality
+- Dark mode support
+
+## 🔍 API Testing
+
+### 📋 Testing Features
+- Interactive API testing
+- Request/response validation
+- Authentication testing
+- Error handling simulation
+
+### 🚀 Example Requests
+```bash
+# Get all tasks
+curl -X GET http://localhost:3000/tasks
+
+# Create a new task
+curl -X POST http://localhost:3000/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New Task", "description": "Task description"}'
+```
+
+## 📊 API Metrics
+
+### 📈 Usage Statistics
+- Request count
+- Response times
+- Error rates
+- API version usage
+
+### 📉 Performance Monitoring
+- Latency tracking
+- Throughput measurement
+- Error tracking
+- Rate limiting
+
+## 🔒 Security
+
+### 🛡️ Security Features
+- API key validation
+- JWT token verification
+- Rate limiting
+- CORS configuration
+
+### 🔐 Authentication Methods
+1. JWT Bearer Token
+2. OAuth2
+3. API Key
+4. Basic Auth
+
+## 📚 Additional Resources
+
+### 📖 Documentation
+- [NestJS Swagger Documentation](https://docs.nestjs.com/openapi/introduction)
+- [OpenAPI Specification](https://swagger.io/specification/)
+- [Swagger UI Documentation](https://swagger.io/tools/swagger-ui/)
+
+### 🛠️ Tools
+- Swagger Editor
+- Swagger Codegen
+- Swagger Inspector
+- Postman
+
+## 🔄 Version Control
+
+### 📦 Versioning Strategy
+- Semantic versioning
+- API version headers
+- Backward compatibility
+- Deprecation notices
+
+### 📝 Changelog
+- API changes
+- Breaking changes
+- New features
+- Bug fixes
 
 ## Service Endpoints
 

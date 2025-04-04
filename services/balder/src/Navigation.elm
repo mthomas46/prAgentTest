@@ -159,119 +159,104 @@ services =
 
 view : Model -> Html Msg
 view model =
-    nav [ Html.Attributes.class "bg-white shadow-lg sticky top-0 z-50" ]
+    nav [ Html.Attributes.class "bg-white shadow-sm" ]
         [ div [ Html.Attributes.class "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ]
-            [ div [ Html.Attributes.class "flex justify-between items-center h-16" ]
-                [ div [ Html.Attributes.class "flex-shrink-0" ]
-                    [ span [ Html.Attributes.class "text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent" ] 
-                        [ text "Microservices Platform" ] 
-                    ]
-                , div [ Html.Attributes.class "hidden md:flex md:items-center md:space-x-8" ]
-                    [ div [ Html.Attributes.class "flex space-x-4" ]
-                        (List.filter (\s -> s.category == "Core Services") services |> List.map viewServiceLink)
-                    , div [ Html.Attributes.class "flex space-x-4" ]
-                        (List.filter (\s -> s.category == "Monitoring") services |> List.map viewServiceLink)
-                    , div [ Html.Attributes.class "flex space-x-4" ]
-                        (List.filter (\s -> s.category == "Tools") services |> List.map viewServiceLink)
-                    ]
-                , div [ Html.Attributes.class "flex items-center md:hidden" ]
-                    [ button
-                        [ type_ "button"
-                        , Html.Attributes.class "inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200"
-                        , onClick ToggleMobileMenu
+            [ div [ Html.Attributes.class "flex justify-between h-16" ]
+                [ div [ Html.Attributes.class "flex" ]
+                    [ div [ Html.Attributes.class "flex-shrink-0 flex items-center" ]
+                        [ img
+                            [ Html.Attributes.class "h-8 w-auto"
+                            , src "/logo.png"
+                            , alt "Logo"
+                            ]
+                            []
                         ]
-                        [ span [ Html.Attributes.class "sr-only" ] [ text "Open main menu" ]
-                        , if model.isMobileMenuOpen then
-                            viewCloseIcon
-                          else
-                            viewHamburgerIcon
+                    , div [ Html.Attributes.class "hidden sm:ml-6 sm:flex sm:space-x-8" ]
+                        [ a
+                            [ href "#"
+                            , Html.Attributes.class "border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            ]
+                            [ text "Dashboard" ]
+                        , a
+                            [ href "#"
+                            , Html.Attributes.class "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            ]
+                            [ text "Services" ]
+                        , a
+                            [ href "#"
+                            , Html.Attributes.class "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                            ]
+                            [ text "Tools" ]
+                        ]
+                    ]
+                , div [ Html.Attributes.class "hidden sm:ml-6 sm:flex sm:items-center" ]
+                    [ div [ Html.Attributes.class "ml-3 relative" ]
+                        [ div []
+                            [ button
+                                [ Html.Attributes.class "bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                ]
+                                [ span [ Html.Attributes.class "sr-only" ] [ text "View notifications" ]
+                                , svg
+                                    [ Html.Attributes.class "h-6 w-6"
+                                    , Svg.Attributes.fill "none"
+                                    , Svg.Attributes.viewBox "0 0 24 24"
+                                    , Svg.Attributes.stroke "currentColor"
+                                    ]
+                                    [ Svg.path
+                                        [ Svg.Attributes.strokeLinecap "round"
+                                        , Svg.Attributes.strokeLinejoin "round"
+                                        , Svg.Attributes.strokeWidth "2"
+                                        , Svg.Attributes.d "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                                        ]
+                                        []
+                                    ]
+                                ]
+                            ]
                         ]
                     ]
                 ]
             ]
-        , if model.isMobileMenuOpen then
-            viewMobileMenu
-          else
-            text ""
         ]
 
 
-viewHamburgerIcon : Html msg
-viewHamburgerIcon =
-    svg [ Svg.Attributes.class "block h-6 w-6", fill "none", viewBox "0 0 24 24", stroke "currentColor" ]
-        [ path [ strokeLinecap "round", strokeLinejoin "round", strokeWidth "2", d "M4 6h16M4 12h16M4 18h16" ] [] ]
-
-
-viewCloseIcon : Html msg
-viewCloseIcon =
-    svg [ Svg.Attributes.class "block h-6 w-6", fill "none", viewBox "0 0 24 24", stroke "currentColor" ]
-        [ path [ strokeLinecap "round", strokeLinejoin "round", strokeWidth "2", d "M6 18L18 6M6 6l12 12" ] [] ]
-
-
-viewMobileMenu : Html msg
-viewMobileMenu =
-    div [ Html.Attributes.class "md:hidden bg-white border-t border-gray-200 shadow-lg" ]
-        [ div [ Html.Attributes.class "px-2 pt-2 pb-3 space-y-1" ]
-            [ div [ Html.Attributes.class "px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider" ]
-                [ text "Core Services" ]
-            , div [] (List.filter (\s -> s.category == "Core Services") services |> List.map viewMobileServiceLink)
-            , div [ Html.Attributes.class "mt-6 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider" ]
-                [ text "Monitoring" ]
-            , div [] (List.filter (\s -> s.category == "Monitoring") services |> List.map viewMobileServiceLink)
-            , div [ Html.Attributes.class "mt-6 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider" ]
-                [ text "Tools" ]
-            , div [] (List.filter (\s -> s.category == "Tools") services |> List.map viewMobileServiceLink)
-            ]
+viewNavItem : NavItem -> Html Msg
+viewNavItem item =
+    a
+        [ href item.url
+        , Html.Attributes.class "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+        , Html.Attributes.class
+            (if item.isActive then
+                "border-indigo-500 text-gray-900"
+            else
+                "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+            )
         ]
+        [ text item.name ]
 
 
-viewServiceLink : Service -> Html msg
-viewServiceLink service =
-    div [ Html.Attributes.class "group relative" ]
-        [ div [ Html.Attributes.class "flex flex-col items-center" ]
-            [ a
-                [ href service.url
-                , Html.Attributes.class "inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200 rounded-md hover:bg-gray-50"
-                ]
-                [ text service.name
+viewServiceCard : Service -> Html Msg
+viewServiceCard service =
+    div [ Html.Attributes.class "bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 mb-6" ]
+        [ div [ Html.Attributes.class "p-6" ]
+            [ div [ Html.Attributes.class "flex items-center justify-between mb-4" ]
+                [ h2 [ Html.Attributes.class "text-xl font-semibold text-gray-900" ] [ text service.name ]
                 , viewStatusIndicator service.status
                 ]
-            , a
-                [ href service.swaggerUrl
-                , Html.Attributes.class "inline-flex items-center px-3 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 rounded-md hover:bg-indigo-50"
-                ]
-                [ text "API"
-                , viewStatusIndicator service.status
-                ]
-            ]
-        , div [ Html.Attributes.class "absolute hidden group-hover:block bg-white p-4 rounded-lg shadow-xl z-10 w-72 border border-gray-100 -ml-20 mt-1" ]
-            [ div [ Html.Attributes.class "text-sm text-gray-600 mb-2" ] [ text service.description ]
-            , div [ Html.Attributes.class "flex items-center justify-between" ]
-                [ div [ Html.Attributes.class "text-xs text-indigo-600 font-semibold" ] [ text service.category ]
-                , div [ Html.Attributes.class "text-xs" ] [ viewStatusText service.status ]
-                ]
-            ]
-        ]
-
-
-viewMobileServiceLink : Service -> Html msg
-viewMobileServiceLink service =
-    div [ Html.Attributes.class "block rounded-md hover:bg-gray-50" ]
-        [ div [ Html.Attributes.class "flex flex-col px-3 py-2" ]
-            [ a
-                [ href service.url
-                , Html.Attributes.class "flex items-center text-base font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200"
-                ]
-                [ text service.name
-                , viewStatusIndicator service.status
-                ]
-            , div [ Html.Attributes.class "mt-1 flex items-center justify-between" ]
-                [ p [ Html.Attributes.class "text-sm text-gray-500" ] [ text service.description ]
+            , p [ Html.Attributes.class "text-gray-600 mb-4" ] [ text service.description ]
+            , div [ Html.Attributes.class "flex flex-col space-y-2" ]
+                [ a
+                    [ href service.url
+                    , Html.Attributes.class "inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
+                    ]
+                    [ text "Visit Service" ]
                 , a
                     [ href service.swaggerUrl
-                    , Html.Attributes.class "ml-2 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+                    , Html.Attributes.class "inline-flex items-center justify-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition-colors duration-200"
                     ]
-                    [ text "API" ]
+                    [ text "API Documentation" ]
+                ]
+            , div [ Html.Attributes.class "mt-4 pt-4 border-t border-gray-100" ]
+                [ div [ Html.Attributes.class "mt-2" ] [ viewStatusText service.status ]
                 ]
             ]
         ]
@@ -280,21 +265,18 @@ viewMobileServiceLink service =
 viewStatusIndicator : String -> Html msg
 viewStatusIndicator status =
     let
-        (color, title) =
+        color =
             case status of
-                "healthy" ->
-                    ("text-green-500", "Service is healthy")
-                "unhealthy" ->
-                    ("text-yellow-500", "Service is unhealthy")
-                "offline" ->
-                    ("text-red-500", "Service is offline")
+                "available" ->
+                    "text-green-500"
+                "unavailable" ->
+                    "text-red-500"
+                "degraded" ->
+                    "text-yellow-500"
                 _ ->
-                    ("text-gray-500", "Status unknown")
+                    "text-gray-500"
     in
-    span 
-        [ Html.Attributes.class ("ml-2 " ++ color)
-        , Html.Attributes.title title
-        ] 
+    span [ Html.Attributes.class ("text-sm " ++ color) ]
         [ text "•" ]
 
 
@@ -303,17 +285,13 @@ viewStatusText status =
     let
         (statusText, color) =
             case status of
-                "healthy" ->
-                    ("Service is healthy", "text-green-600")
-                "unhealthy" ->
-                    ("Service is unhealthy", "text-yellow-600")
-                "offline" ->
-                    ("Service is offline", "text-red-600")
-                "container-running" ->
-                    ("Container is running", "text-green-600")
-                "container-stopped" ->
-                    ("Container is stopped", "text-red-600")
+                "available" ->
+                    ("Service is available", "text-green-600")
+                "unavailable" ->
+                    ("Service is unavailable", "text-red-600")
+                "degraded" ->
+                    ("Service is degraded", "text-yellow-600")
                 _ ->
                     ("Status unknown", "text-gray-600")
     in
-    span [ Html.Attributes.class ("text-xs font-medium " ++ color) ] [ text statusText ] 
+    span [ Html.Attributes.class ("text-sm font-medium " ++ color) ] [ text statusText ] 

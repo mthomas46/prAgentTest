@@ -1,30 +1,6 @@
 version: '3.8'
 
 services:
-  api-gateway:
-    build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    environment:
-      - NODE_ENV=development
-      - TASK_SERVICE_URL=http://task-service:3000
-      - UI_SERVICE_URL=http://ui-service:3002
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-
   task-service:
     build:
       context: ./services/task-service
@@ -72,111 +48,30 @@ services:
       retries: 5
     restart: unless-stopped
 
-  ui-service:
-    build:
-      context: ./services/ui-service
-      dockerfile: Dockerfile
+  loki:
+    image: grafana/loki:2.8.0
     ports:
-      - "3002:4000"
-    environment:
-      - NODE_ENV=development
-      - TASK_SERVICE_URL=http://task-service:3000
-    depends_on:
-      - task-service
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/tmp/loki
+      - loki_rules:/loki/rules
+    user: root
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  prometheus:
-    image: prom/prometheus:v2.30.3
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  grafana:
-    image: grafana/grafana:8.2.2
-    ports:
-      - "3003:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-    depends_on:
-      - prometheus
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  heimdal:
-    build:
-      context: ./services/test-service
-      dockerfile: Dockerfile
-    ports:
-      - "3006:3006"
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      task-service:
-        condition: service_healthy
-      bifrost:
-        condition: service_healthy
-      ui-service:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
 
 volumes:
   postgres_data:
-  elasticsearch_data:
   grafana_data:
+  elasticsearch_data:
+  loki_data:
+  loki_rules:
 
 networks:
   default:
-    driver: bridge 
+    driver: bridge

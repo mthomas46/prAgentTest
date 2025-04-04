@@ -1,30 +1,37 @@
 # Stage 1: Dependencies
-FROM node:18-alpine AS dependencies
+FROM node:18-alpine as dependencies
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:18-alpine as builder
 WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY . .
+
+# Install build dependencies
+RUN apk add --no-cache curl
 
 # Install Elm
-RUN apk add --no-cache curl
 RUN curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
 RUN gunzip elm.gz
 RUN chmod +x elm
 RUN mv elm /usr/local/bin/
 
-# Build Elm and TypeScript
+# Copy dependencies
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . .
+
+# Create dist directory
 RUN mkdir -p dist/public
-RUN yes | elm make src/Frontpage.elm --output=dist/public/elm.js
+
+# Build TypeScript and Elm
 RUN npm run build
+
+# Copy static files
 RUN cp -r public/* dist/public/
 
 # Stage 3: Production
-FROM node:18-alpine
+FROM node:18-alpine as production
 WORKDIR /usr/src/app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/dist/public ./public

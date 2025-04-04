@@ -90,7 +90,7 @@ services:
       context: ./tools/avettaDocAgent
       dockerfile: Dockerfile
     ports:
-      - "3002:3000"
+      - "3009:3000"
     environment:
       - NODE_ENV=development
       - ELASTICSEARCH_URL=http://elasticsearch:9200

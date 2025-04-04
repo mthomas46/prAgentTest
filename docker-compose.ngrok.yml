@@ -19,7 +19,7 @@ services:
     build:
       context: ./tools/avettaDocAgent
     ports:
-      - "3004:3002"
+      - "3009:3002"
     environment:
       - PORT=3002
     networks:

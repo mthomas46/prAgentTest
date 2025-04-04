@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  balder:
+    build:
+      context: ./services/balder
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services/balder/src:/usr/src/app/src
+      - ./services/balder/public:/usr/src/app/public
+    environment:
+      - NODE_ENV=development
+      - ELM_DEBUGGER=true
+    command: npm run dev 

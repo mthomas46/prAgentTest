@@ -1,23 +1,34 @@
-const express = require('express');
-const cors = require('cors');
+import express from 'express';
+import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import path from 'path';
 
 const app = express();
+const port = process.env.PORT || 3006;
 
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3002',
-    'http://localhost:3003',
-    'http://localhost:3004',
-    'http://task-service:3000',
-    'http://balder:3002',
-    'http://webhook-service:3003',
-    'http://heimdal:3004'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-brokkr-token'],
-  credentials: true
-}));
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// ... existing code ... 
+// Serve static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Swagger documentation
+const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy' });
+});
+
+// Version endpoint
+app.get('/version', (req, res) => {
+    res.json({ version: '1.0.0' });
+});
+
+// Start server
+app.listen(port, () => {
+    console.log(`Loki service running at http://localhost:${port}`);
+}); 
