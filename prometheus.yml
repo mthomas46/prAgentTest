@@ -1,3 +1,36 @@
-global:\n  scrape_interval: 15s\n  evaluation_interval: 15s\n\nscrape_configs:\n  - job_name: \"task-service\"\n    static_configs:\n      - targets: [\"task-service:3000\"]\n\n  - job_name: \"api-gateway\"\n    static_configs:\n      - targets: [\"api-gateway:3001\"]\n\n  - job_name: \"ui-service\"\n    static_configs:\n      - targets: [\"ui-service:3002\"]\n\n  - job_name: \"test-service\"\n    static_configs:\n      - targets: [\"test-service:3006\"]\n\n  - job_name: "bifrost"
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "task-service"
     static_configs:
-      - targets: ["bifrost:3001"]
+      - targets: ["task-service:3000"]
+
+  - job_name: "balder"
+    static_configs:
+      - targets: ["balder:3002"]
+
+  - job_name: "webhook-service"
+    static_configs:
+      - targets: ["webhook-service:3003"]
+
+  - job_name: "heimdal"
+    static_configs:
+      - targets: ["heimdal:3003"]
+
+  - job_name: "bifrost"
+    static_configs:
+      - targets: ["bifrost:3005"]
+
+  - job_name: "brokkr"
+    static_configs:
+      - targets: ["brokkr:3006"]
+
+  - job_name: "avetta-doc-agent"
+    static_configs:
+      - targets: ["avetta-doc-agent:3002"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"] 

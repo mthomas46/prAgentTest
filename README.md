@@ -437,3 +437,67 @@ npm test
 ## License
 
 MIT
+
+# Monitoring Stack Setup
+
+This project includes a comprehensive monitoring stack using Prometheus, Grafana, Loki, and Node Exporter.
+
+## Components
+
+### Prometheus
+- Configuration: `prometheus.yml`
+- Port: 9090
+- Scrapes metrics from:
+  - Task Service (3000)
+  - Balder (3002)
+  - Webhook Service (3003)
+  - Heimdal (3003)
+  - Bifrost (3005)
+  - Brokkr (3006)
+  - Avetta Doc Agent (3002)
+  - Node Exporter (9100)
+
+### Grafana
+- Port: 3001
+- Used for visualizing metrics and logs
+- Pre-configured with Prometheus and Loki data sources
+
+### Loki
+- Configuration: `loki-config.yaml`
+- Port: 3100
+- Log aggregation and querying
+- Features:
+  - Local storage with filesystem backend
+  - 31-day retention period
+  - In-memory KV store for ring
+  - Disabled ruler API and alertmanager integration
+  - Optimized for single-node deployment
+
+### Node Exporter
+- Port: 9100
+- Collects system metrics for the host machine
+
+## Configuration Details
+
+### Prometheus Configuration
+- Global scrape interval: 15s
+- Evaluation interval: 15s
+- Static service discovery for all components
+
+### Loki Configuration
+- Authentication: Disabled
+- Storage: Local filesystem
+- Retention: 31 days (744 hours)
+- Query limits:
+  - Max query length: 31 days
+  - Ingestion rate: 10MB/s
+  - Burst size: 20MB
+  - Max query parallelism: 32
+  - Max line size: 256KB
+
+## Health Status
+All monitoring components are running and healthy:
+- Prometheus: ✅
+- Grafana: ✅
+- Loki: ✅
+- Node Exporter: ✅
