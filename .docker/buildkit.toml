@@ -1,0 +1,22 @@
+[registry."docker.io"]
+  mirrors = ["mirror.gcr.io"]
+
+[worker.oci]
+  enabled = true
+  platforms = ["linux/amd64", "linux/arm64"]
+  snapshotter = "overlayfs"
+  rootless = true
+
+[cache]
+  type = "local"
+  path = "/var/lib/buildkit/cache"
+  mode = "max"
+  max-age = "168h"
+  max-size = "50GB"
+
+[registry."docker.io".cache]
+  type = "local"
+  path = "/var/lib/buildkit/registry-cache"
+  mode = "max"
+  max-age = "168h"
+  max-size = "50GB" 

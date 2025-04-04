@@ -1,8 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ServiceInfo } from './interfaces/service-info.interface';
 import { firstValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { AxiosError } from 'axios';
+
+interface HealthResponse {
+  status: string;
+  [key: string]: any;
+}
+
+interface VersionResponse {
+  version: string;
+  [key: string]: any;
+}
 
 @Injectable()
 export class ServiceDiscoveryService {
@@ -23,22 +34,24 @@ export class ServiceDiscoveryService {
   async checkServiceHealth(serviceName: string): Promise<ServiceInfo> {
     const service = this.services.find(s => s.name === serviceName);
     if (!service) {
-      throw new Error(`Service ${serviceName} not found`);
+      throw new HttpException(`Service ${serviceName} not found`, HttpStatus.NOT_FOUND);
     }
 
     try {
       const [healthResponse, versionResponse] = await Promise.all([
         firstValueFrom(
-          this.httpService.get(`${service.url}/health`).pipe(
-            catchError(() => {
+          this.httpService.get<HealthResponse>(`${service.url}/health`).pipe(
+            catchError((error: AxiosError) => {
               service.status = 'DOWN';
-              return Promise.reject(`${serviceName} health check failed`);
+              this.logger.error(`Health check failed for ${serviceName}: ${error.message}`);
+              return Promise.reject(error);
             })
           )
         ),
         firstValueFrom(
-          this.httpService.get(`${service.url}/version`).pipe(
+          this.httpService.get<VersionResponse>(`${service.url}/version`).pipe(
             catchError(() => {
+              this.logger.warn(`Version check failed for ${serviceName}`);
               return Promise.resolve({ data: { version: 'unknown' } });
             })
           )
@@ -48,9 +61,11 @@ export class ServiceDiscoveryService {
       service.status = healthResponse.data.status === 'ok' ? 'UP' : 'DOWN';
       service.version = versionResponse.data.version;
       service.lastChecked = new Date();
-    } catch (error) {
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
       service.status = 'DOWN';
       service.lastChecked = new Date();
+      this.logger.error(`Service check failed for ${serviceName}: ${axiosError.message}`);
     }
 
     return service;
@@ -68,7 +83,7 @@ export class ServiceDiscoveryService {
   getServiceInfo(serviceName: string): ServiceInfo {
     const service = this.services.find(s => s.name === serviceName);
     if (!service) {
-      throw new Error(`Service ${serviceName} not found`);
+      throw new HttpException(`Service ${serviceName} not found`, HttpStatus.NOT_FOUND);
     }
     return service;
   }

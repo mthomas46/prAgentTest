@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { RouteRequestDto } from '../dto/route-request.dto';
 import { firstValueFrom } from 'rxjs';
 import { ServiceInfo } from '../interfaces/service-info.interface';
+import { AxiosError } from 'axios';
+
+interface ErrorResponse {
+  message?: string;
+  [key: string]: any;
+}
 
 @Injectable()
 export class GatewayService {
@@ -26,7 +32,7 @@ export class GatewayService {
 
     // Validate service exists
     if (!this.serviceMap[service]) {
-      throw new Error(`Service ${service} not found`);
+      throw new HttpException(`Service ${service} not found`, HttpStatus.NOT_FOUND);
     }
 
     // Construct target URL
@@ -55,37 +61,48 @@ export class GatewayService {
       );
 
       return response.data;
-    } catch (error) {
-      if (error.response) {
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        const errorData = axiosError.response.data as ErrorResponse;
         // Forward the error response from the target service
-        throw {
-          message: error.response.data?.message || 'Service error',
-          status: error.response.status,
-        };
+        throw new HttpException(
+          errorData.message || 'Service error',
+          axiosError.response.status,
+        );
       }
-      throw {
-        message: 'Failed to connect to service',
-        status: 500,
-      };
+      throw new HttpException('Failed to connect to service', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   async forwardRequest(serviceId: string, path: string, method: string, data?: any): Promise<any> {
     const service = await this.getServiceInfo(serviceId);
     if (!service) {
-      throw new Error(`Service with ID ${serviceId} not found`);
+      throw new HttpException(`Service with ID ${serviceId} not found`, HttpStatus.NOT_FOUND);
     }
 
     const url = `${service.url}${path}`;
-    const response = await firstValueFrom(
-      this.httpService.request({
-        method,
-        url,
-        data,
-      }),
-    );
+    try {
+      const response = await firstValueFrom(
+        this.httpService.request({
+          method,
+          url,
+          data,
+        }),
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response) {
+        const errorData = axiosError.response.data as ErrorResponse;
+        throw new HttpException(
+          errorData.message || 'Service error',
+          axiosError.response.status,
+        );
+      }
+      throw new HttpException('Failed to connect to service', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   private async getServiceInfo(serviceId: string): Promise<ServiceInfo | null> {

@@ -16,10 +16,11 @@ export class GatewayController {
   async routeRequest(@Body() request: RouteRequestDto) {
     try {
       return await this.gatewayService.routeRequest(request);
-    } catch (error) {
+    } catch (error: unknown) {
+      const httpError = error as HttpException;
       throw new HttpException(
-        error.message || 'Internal server error',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        httpError.message || 'Internal server error',
+        httpError.getStatus?.() || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

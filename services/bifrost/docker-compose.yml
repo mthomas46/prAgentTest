@@ -6,21 +6,23 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3002:3002"
+      - "3003:3000"
     environment:
-      - PORT=3002
+      - PORT=3000
       - RABBITMQ_URL=amqp://rabbitmq:5672
       - NODE_ENV=development
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - DB_NAME=bifrost
+      - DB_NAME=postgres
     depends_on:
-      - rabbitmq
-      - postgres
+      rabbitmq:
+        condition: service_started
+      postgres:
+        condition: service_healthy
     networks:
-      - microservices-network
+      - yggdrasil_network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -28,7 +30,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - microservices-network
+      - yggdrasil_network
 
   postgres:
     image: postgres:14-alpine
@@ -48,4 +50,6 @@ volumes:
 
 networks:
   microservices-network:
-    driver: bridge 
+    driver: bridge
+  yggdrasil_network:
+    external: true 

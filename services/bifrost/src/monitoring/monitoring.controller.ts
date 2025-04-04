@@ -3,7 +3,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
 import { register } from 'prom-client';
-import { HealthService } from './health.service';
+import { HealthService } from '../health/health.service';
 
 @ApiTags('monitoring')
 @Controller('monitoring')
@@ -47,9 +47,9 @@ export class MonitoringController {
   @ApiResponse({ status: 200, description: 'Return health status' })
   async getHealth() {
     const startTime = Date.now();
-    const status = await this.healthService.check();
-    await this.monitoringService.trackHealthCheck('bifrost', status, Date.now() - startTime);
-    return { status };
+    const healthStatus = await this.healthService.checkHealth();
+    await this.monitoringService.trackHealthCheck('bifrost', 'healthy', Date.now() - startTime);
+    return healthStatus;
   }
 
   @Get('status')

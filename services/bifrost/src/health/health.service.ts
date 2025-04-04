@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class HealthService {
   constructor() {}
 
-  async check() {
+  async checkHealth() {
     return {
       service: 'bifrost',
       status: 'healthy',

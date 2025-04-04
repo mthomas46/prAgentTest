@@ -1,32 +1,34 @@
 # Stage 1: Dependencies
-FROM node:18-alpine AS dependencies
+FROM node:18-alpine as dependencies
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --force && \
+    npm install pg --save --force
 
 # Stage 2: Builder
-FROM node:18-alpine AS builder
+FROM node:18-alpine as builder
 WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+COPY --from=dependencies /app/node_modules ./node_modules
+RUN npm run build && \
+    ls -la dist/ && \
+    cat dist/main.js
 
 # Stage 3: Production
-FROM node:18-alpine
+FROM node:18-alpine as production
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl && \
+    npm install pg --save && \
+    chown -R node:node /app && \
+    ls -la dist/ && \
+    cat dist/main.js
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=3000
+EXPOSE 3000
 
-# Expose the port
-EXPOSE 3001
-
-# Start the application
-CMD ["npm", "run", "start"] 
+USER node
+CMD ["node", "dist/main.js"] 
