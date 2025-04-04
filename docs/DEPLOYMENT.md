@@ -1,308 +1,154 @@
 # Deployment Guide
 
-This guide provides instructions for deploying the event-driven microservice architecture in various environments.
+## Overview
+
+This guide provides instructions for deploying the microservices architecture using Docker Compose. The system consists of several services, each with specific roles and configurations.
 
 ## Prerequisites
 
-- Docker and Docker Compose
-- Kubernetes cluster (for production deployment)
-- Helm (for Kubernetes deployment)
-- kubectl (for Kubernetes management)
-- Access to a container registry
+- Docker Engine >= 24.0.0
+- Docker Compose >= 2.20.0
+- Minimum 4GB RAM
+- Minimum 2 CPU cores
 
-## Local Development Deployment
+## Service Configuration
 
-### Using Docker Compose
+### Core Services
 
-1. Build the services:
+#### Task Service
+- Port: 3000
+- Health Check: `http://localhost:3000/health`
+- Environment Variables:
+  - `NODE_ENV`: development
+  - `PORT`: 3000
+  - `POSTGRES_HOST`: postgres
+  - `POSTGRES_PORT`: 5432
+  - `POSTGRES_USER`: postgres
+  - `POSTGRES_PASSWORD`: postgres
+  - `POSTGRES_DB`: taskdb
+  - `BROKKR_TOKEN`: brokkr-secure-token-123
+
+#### Balder
+- Port: 3002
+- Health Check: `http://localhost:3002/health`
+- Environment Variables:
+  - `NODE_ENV`: development
+  - `PORT`: 3002
+  - `TASK_SERVICE_URL`: http://task-service:3000
+  - `BROKKR_TOKEN`: brokkr-secure-token-123
+
+#### Heimdal
+- Port: 3003
+- Health Check: `http://localhost:3003/health`
+- Environment Variables:
+  - `NODE_ENV`: development
+  - `PORT`: 3003
+  - `TASK_SERVICE_URL`: http://task-service:3000
+  - `BALDER_URL`: http://balder:3002
+  - `BROKKR_TOKEN`: brokkr-secure-token-123
+
+#### PostgreSQL
+- Port: 5432
+- Health Check: Automatic via `pg_isready`
+- Environment Variables:
+  - `POSTGRES_USER`: postgres
+  - `POSTGRES_PASSWORD`: postgres
+  - `POSTGRES_DB`: taskdb
+
+### Monitoring Services
+
+#### Kibana
+- Port: 5601
+- Access: `http://localhost:5601`
+- Purpose: Visualization and analytics
+
+#### Logstash
+- Ports: 5000, 5044, 9600
+- Purpose: Log processing and analysis
+
+#### Node Exporter
+- Port: 9100
+- Purpose: System metrics collection
+
+#### Ngrok
+- Port: 4040
+- Purpose: Secure tunnel to localhost
+
+## Deployment Steps
+
+1. Clone the repository
+2. Set up environment variables
+3. Build and start services:
 ```bash
-docker-compose build
+docker-compose -f docker-compose.core.yml up -d --build
 ```
 
-2. Start the services:
+## Health Check URLs
+
+- Task Service: `http://localhost:3000/health`
+- Balder: `http://localhost:3002/health`
+- Heimdal: `http://localhost:3003/health`
+- PostgreSQL: Automatic health check
+
+## Resource Limits
+
+### Task Service
+- CPU: 0.5 cores limit, 0.25 cores reservation
+- Memory: 512MB limit, 256MB reservation
+
+### Balder
+- CPU: 0.5 cores limit, 0.25 cores reservation
+- Memory: 512MB limit, 256MB reservation
+
+### Heimdal
+- CPU: 0.5 cores limit, 0.25 cores reservation
+- Memory: 512MB limit, 256MB reservation
+
+### PostgreSQL
+- CPU: 0.5 cores limit, 0.25 cores reservation
+- Memory: 1GB limit, 512MB reservation
+
+## Monitoring Access
+
+- Kibana: `http://localhost:5601`
+- Logstash: Ports 5000, 5044, 9600
+- Node Exporter: `http://localhost:9100/metrics`
+- Ngrok: `http://localhost:4040`
+
+## Troubleshooting
+
+1. Check service logs:
 ```bash
-docker-compose up -d
+docker-compose -f docker-compose.core.yml logs [service-name]
 ```
 
-3. Verify the services are running:
+2. Verify service health:
 ```bash
-docker-compose ps
+curl http://localhost:[port]/health
 ```
 
-### Manual Deployment
-
-1. Install dependencies:
+3. Check resource usage:
 ```bash
-npm install
-```
-
-2. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. Start the services:
-```bash
-npm run start:dev
-```
-
-## Production Deployment
-
-### Docker Deployment
-
-1. Build the production image:
-```bash
-docker build -t your-registry/event-service:latest .
-```
-
-2. Push the image to your registry:
-```bash
-docker push your-registry/event-service:latest
-```
-
-3. Deploy using Docker Compose:
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Kubernetes Deployment
-
-1. Create Kubernetes secrets:
-```bash
-kubectl create secret generic event-service-secrets \
-  --from-file=.env
-```
-
-2. Deploy using Helm:
-```bash
-helm install event-service ./helm
-```
-
-3. Verify the deployment:
-```bash
-kubectl get pods
-kubectl get services
-```
-
-## Configuration
-
-### Environment Variables
-
-Required environment variables for production:
-
-```env
-# Database Configuration
-DB_HOST=postgres
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your-secure-password
-DB_DATABASE=api
-
-# RabbitMQ Configuration
-RABBITMQ_HOST=rabbitmq
-RABBITMQ_PORT=5672
-RABBITMQ_USERNAME=guest
-RABBITMQ_PASSWORD=guest
-
-# Cache Configuration
-CACHE_TTL=300
-CACHE_MAX_ITEMS=1000
-
-# Event System Configuration
-EVENT_BATCH_SIZE=50
-EVENT_BATCH_TIMEOUT=5000
-EVENT_ARCHIVE_THRESHOLD=90
-
-# Security
-JWT_SECRET=your-secure-secret
-API_KEY=your-secure-api-key
-```
-
-### Kubernetes Configuration
-
-Example Kubernetes deployment manifest:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: event-service
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: event-service
-  template:
-    metadata:
-      labels:
-        app: event-service
-    spec:
-      containers:
-      - name: event-service
-        image: your-registry/event-service:latest
-        ports:
-        - containerPort: 3000
-        envFrom:
-        - secretRef:
-            name: event-service-secrets
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-```
-
-## Monitoring and Logging
-
-### Prometheus Configuration
-
-Example Prometheus configuration:
-
-```yaml
-scrape_configs:
-  - job_name: 'event-service'
-    static_configs:
-      - targets: ['event-service:3000']
-```
-
-### Grafana Dashboards
-
-Import the following dashboards:
-1. Event Processing Metrics
-2. System Resource Utilization
-3. Database Performance
-4. Cache Performance
-
-## Scaling
-
-### Horizontal Scaling
-
-To scale the service horizontally:
-
-```bash
-# Using Docker Compose
-docker-compose up -d --scale event-service=3
-
-# Using Kubernetes
-kubectl scale deployment event-service --replicas=3
-```
-
-### Vertical Scaling
-
-Adjust resource limits in the deployment configuration:
-
-```yaml
-resources:
-  requests:
-    cpu: "200m"
-    memory: "512Mi"
-  limits:
-    cpu: "1000m"
-    memory: "1Gi"
-```
-
-## Backup and Recovery
-
-### Database Backup
-
-1. Schedule regular backups:
-```bash
-pg_dump -U postgres -d api > backup.sql
-```
-
-2. Restore from backup:
-```bash
-psql -U postgres -d api < backup.sql
-```
-
-### Event Archive Backup
-
-1. Export archived events:
-```bash
-npm run export-events -- --output=events-backup.json
-```
-
-2. Import archived events:
-```bash
-npm run import-events -- --input=events-backup.json
+docker stats
 ```
 
 ## Maintenance
 
-### Regular Tasks
-
-1. Cache cleanup:
-```bash
-npm run cache:cleanup
-```
-
-2. Database maintenance:
-```bash
-npm run db:maintenance
-```
-
-3. Event archive rotation:
-```bash
-npm run events:rotate
-```
-
-### Monitoring Tasks
-
-1. Check service health:
-```bash
-curl http://localhost:3000/health
-```
-
-2. View performance metrics:
-```bash
-curl http://localhost:3000/metrics
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. Database Connection Issues
-   - Check database credentials
-   - Verify network connectivity
-   - Check database logs
-
-2. RabbitMQ Connection Issues
-   - Verify RabbitMQ is running
-   - Check connection credentials
-   - Monitor queue health
-
-3. Performance Issues
-   - Check resource utilization
-   - Monitor cache hit rates
-   - Review event processing rates
-
-### Logs
-
-View service logs:
-```bash
-# Docker
-docker-compose logs -f event-service
-
-# Kubernetes
-kubectl logs -f deployment/event-service
-```
+1. Regular backups of PostgreSQL data
+2. Monitor resource usage
+3. Update security tokens regularly
+4. Review and rotate logs
+5. Update service configurations as needed
 
 ## Security Considerations
 
-1. Use secure passwords and secrets
-2. Enable TLS for all services
-3. Implement proper access controls
-4. Regular security audits
-5. Monitor for suspicious activity
-
-## Updates and Upgrades
-
-1. Backup all data
-2. Test in staging environment
-3. Deploy updates during low-traffic periods
-4. Monitor for issues
-5. Rollback plan in place 
+1. Secure token management
+2. Network segmentation
+3. Resource limits
+4. Regular updates
+5. Access control
+6. Monitoring and alerting
+7. Backup strategies
+8. Encryption at rest
+9. Secure communication
+10. Regular security audits 

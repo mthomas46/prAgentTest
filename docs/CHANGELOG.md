@@ -1,5 +1,191 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- Norse mythology theme implementation
+- Heimdal service for system monitoring
+- Bifrost and Brokkr services for event handling
+- Secure test data endpoints
+- Comprehensive health monitoring system
+- Real-time metrics collection
+- Log aggregation with Kibana and Logstash
+- Balder service for user interface and interaction
+
+### Changed
+- Updated Node.js requirement to >=18.0.0
+- Updated PostgreSQL requirement to >=16.0.0
+- Renamed UI service to Balder
+- Updated service descriptions with Norse mythology theme
+- Enhanced error handling
+- Improved TypeScript type safety
+- Updated service health checks
+- Enhanced monitoring capabilities
+
+### Fixed
+- TypeScript dependencies
+- Port configuration issues
+- Health check endpoints
+- Test data endpoint security
+- Service communication
+- Resource limits
+- Logging configuration
+- Environment variables
+
+### Removed
+- API Gateway service
+- Outdated monitoring tools
+- Unused dependencies
+- Obsolete configuration
+
+## [1.1.0] - 2024-03-21
+
+### Added
+- Task management features
+- User authentication
+- Service monitoring
+- Health check endpoints
+- Test data endpoints
+- Documentation updates
+
+### Changed
+- Service architecture
+- Database schema
+- API endpoints
+- Error handling
+- Logging format
+
+### Fixed
+- Security vulnerabilities
+- Performance issues
+- Database connections
+- Service communication
+- Health checks
+
+## [1.0.0] - 2024-03-20
+
+### Added
+- Initial project setup
+- Basic service structure
+- Database configuration
+- API endpoints
+- Documentation
+
+### Changed
+- Project structure
+- Configuration files
+- Dependencies
+
+### Fixed
+- Build issues
+- Configuration errors
+- Dependencies
+
+## [0.9.0] - 2024-03-19
+
+### Added
+- Service templates
+- Basic monitoring
+- Health checks
+- Documentation
+
+### Changed
+- Project organization
+- Configuration
+- Dependencies
+
+### Fixed
+- Build process
+- Configuration
+- Dependencies
+
+## [0.8.0] - 2024-03-18
+
+### Added
+- Project structure
+- Basic services
+- Configuration
+- Documentation
+
+### Changed
+- Organization
+- Structure
+- Configuration
+
+### Fixed
+- Setup
+- Configuration
+- Dependencies
+
+## [1.0.0] - 2025-04-03
+
+### Added
+- Initial release of microservices architecture
+- Task Service implementation
+- UI Service implementation
+- PostgreSQL database integration
+- Docker Compose configuration
+- Basic monitoring setup
+- Health check endpoints
+- Test data endpoints
+
+### Changed
+- Project structure reorganization
+- Service port configurations
+- Monitoring setup enhancement
+- Service management improvements
+
+### Fixed
+- TypeScript compilation errors
+- Service communication issues
+- Health check implementations
+- Resource allocation
+
+## [0.9.0] - 2025-04-02
+
+### Added
+- Event system implementation
+- Caching strategies
+- Database connection pooling
+- Performance monitoring
+- Event batching and processing
+- Event validation and compression
+- Event archiving and retrieval
+- Retry mechanisms
+
+### Changed
+- Updated service architecture
+- Enhanced error handling
+- Improved test coverage
+- Updated documentation
+
+### Fixed
+- Service dependencies
+- Configuration issues
+- Test assertions
+- Error handling
+
+## [0.8.0] - 2025-04-01
+
+### Added
+- Initial project setup
+- Basic service structure
+- Development environment
+- Testing framework
+- Documentation
+
+### Changed
+- Project organization
+- Service configuration
+- Development workflow
+
+### Fixed
+- Build issues
+- Configuration errors
+- Documentation updates
+
 ## [1.1.0] - 2024-03-21
 
 ### Added
