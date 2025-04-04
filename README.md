@@ -1,46 +1,31 @@
 # Event-Driven Microservice Architecture
 
-A robust, scalable, and performant event-driven microservice architecture built with NestJS, featuring comprehensive monitoring, logging, and observability.
+A robust, scalable, and performant event-driven microservice architecture built with Node.js and TypeScript, featuring comprehensive monitoring, logging, and observability.
 
 ## Overview
 
 The system consists of the following microservices:
 
-- **Task Service**: Manages task-related operations
-- **Balder Service**: Handles UI and task management interface
-- **Heimdal Service**: Provides system-wide health monitoring
-- **Webhook Service**: Handles webhook integrations and callbacks
-- **AvettaDocAgent**: Handles Avetta document webhooks and management
+- **Task Service** (Port 3000): Core task management service
+- **Draupnir External** (Port 3003): External load balancer for Heimdal and Bifrost services
+- **Draupnir Internal** (Port 3004): Internal load balancer for core microservices
+- **PostgreSQL** (Port 5432/5433): Database service
+- **Loki** (Port 3100): Log aggregation service
 
 ## Core Features
 
-- 🔐 Secure authentication and authorization
-- 📊 Comprehensive monitoring with Prometheus and Grafana
-- 📝 Centralized logging with ELK Stack
-- 🔍 Distributed tracing with OpenTelemetry
-- 🚦 Circuit breakers and fallbacks
-- 📈 Auto-scaling capabilities
-- 🔄 Message queuing with RabbitMQ
+- 🔄 Load balancing with Draupnir services
 - 🗄️ Data persistence with PostgreSQL
+- 📝 Centralized logging with Loki
 - 🎯 Health checks and monitoring
 - 🛡️ Rate limiting and security middleware
-- 📚 Swagger/OpenAPI documentation for all services
-
-### Event System Features
-- Event-driven communication using RabbitMQ
-- Multiple caching strategies (LRU, LFU, FIFO, TTL)
-- Database connection pooling with health monitoring
-- Event batching and processing
-- Event validation and compression
-- Event archiving and retrieval
-- Retry mechanisms and error handling
+- 🔐 Secure service-to-service communication
 
 ## Prerequisites
 
 - Node.js >= 18
 - Docker and Docker Compose
 - PostgreSQL >= 16
-- RabbitMQ
 
 ## Quick Start
 
@@ -50,89 +35,108 @@ The system consists of the following microservices:
    cd event-driven-microservice
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables:
+2. Set up environment variables:
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
-4. Start the services:
+3. Start the services:
    ```bash
-   # Using Docker Compose
-   docker-compose -f docker-compose.core.yml up -d
+   docker-compose up -d
    ```
+
+4. Verify services are running:
+   ```bash
+   # Check service health endpoints
+   curl http://localhost:3000/health  # Task Service
+   curl http://localhost:3003/health  # Draupnir External
+   curl http://localhost:3004/health  # Draupnir Internal
+   ```
+
+## Service Configuration
+
+### Task Service
+- Port: 3000
+- Database: PostgreSQL
+- Environment variables:
+  - `DB_HOST`: postgres
+  - `DB_PORT`: 5432
+  - `DB_USERNAME`: postgres
+  - `DB_PASSWORD`: postgres
+  - `DB_NAME`: task_service
+
+### Draupnir External
+- Port: 3003
+- Load balances:
+  - Bifrost service
+  - Heimdal service
+- Configuration in `services/draupnir_external/src/config.ts`
+
+### Draupnir Internal
+- Port: 3004
+- Load balances:
+  - Task service
+  - Core services
+- Configuration in `services/draupnir_internal/src/config.ts`
+
+### PostgreSQL
+- Internal Port: 5432
+- Host Port: 5433
+- Default credentials:
+  - Username: postgres
+  - Password: postgres
+  - Database: task_service
+
+### Loki
+- Port: 3100
+- Log aggregation for all services
+- Configuration via `docker-compose.yml`
 
 ## Project Structure
 
 ```
 .
 ├── services/
-│   ├── task-service/    # Task management service
-│   ├── balder/         # UI and task interface service
-│   ├── heimdal/        # Health monitoring service
-│   └── webhook-service/ # Webhook integration service
+│   ├── draupnir_external/  # External load balancer
+│   ├── draupnir_internal/  # Internal load balancer
+│   └── task-service/       # Task management service
 ├── src/
-│   ├── common/         # Shared modules and utilities
-│   ├── config/         # Configuration files
-│   ├── entities/       # Database entities
-│   ├── interfaces/     # TypeScript interfaces
-│   ├── modules/        # Feature modules
-│   ├── repositories/   # Database repositories
-│   └── services/       # Business logic services
-├── test/              # Test files
-├── docs/             # Documentation
-└── docker/           # Docker configuration
+│   ├── config/            # Configuration files
+│   ├── models/            # Database models
+│   └── services/          # Business logic services
+└── docker/               # Docker configuration
 ```
 
-## Documentation
+## Development
 
-Detailed documentation is available in the `docs` directory:
+### Running Services Locally
 
-- [Swagger Documentation](docs/SWAGGER.md)
-- [Event System Documentation](docs/EVENT_SYSTEM.md)
-- [API Documentation](docs/API.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
+1. Start the database:
+   ```bash
+   docker-compose up postgres -d
+   ```
 
-## API Access
+2. Create the database:
+   ```bash
+   docker-compose exec postgres psql -U postgres -c "CREATE DATABASE task_service;"
+   ```
 
-Each service provides Swagger/OpenAPI documentation for its endpoints:
+3. Start all services:
+   ```bash
+   docker-compose up -d
+   ```
 
-- Task Service: http://localhost:3000/api
-- Balder Service: http://localhost:3002/api
-- Heimdal Service: http://localhost:3003/api
-- Webhook Service: http://localhost:3004/api
+### Troubleshooting
 
-## Monitoring & Observability
+1. Database Connection Issues:
+   - Ensure PostgreSQL is running: `docker-compose ps`
+   - Verify database exists: `docker-compose exec postgres psql -U postgres -l`
+   - Check service logs: `docker-compose logs task-service`
 
-The system includes comprehensive monitoring capabilities:
-
-- Database connection health
-- Cache performance metrics
-- System resource utilization
-- Event processing statistics
-
-Access monitoring dashboards:
-- Grafana: http://localhost:3001
-- Prometheus: http://localhost:9090
-- Kibana: http://localhost:5601
-
-## Testing
-
-```bash
-# Unit tests
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:cov
-```
+2. Service Health Checks:
+   - Use the /health endpoints to verify service status
+   - Check Docker logs for specific services: `docker-compose logs [service-name]`
 
 ## Contributing
 
