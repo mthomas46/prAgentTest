@@ -35,12 +35,14 @@ services:
       - NODE_ENV=development
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=postgres
+      - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=task_service
+      - DB_SYNCHRONIZE=true
+      - DB_LOGGING=true
     depends_on:
-      - postgres
-    restart: unless-stopped
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -70,7 +72,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
 
   ui-service:
     build:
@@ -81,9 +82,6 @@ services:
     environment:
       - NODE_ENV=development
       - TASK_SERVICE_URL=http://task-service:3000
-    depends_on:
-      - task-service
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
       interval: 30s

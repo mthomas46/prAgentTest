@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY package*.json ./
 
@@ -10,9 +10,6 @@ COPY . .
 
 RUN npm run build
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
-
 EXPOSE 3000
 
-CMD ["npm", "start"] 
+CMD ["npm", "run", "start:prod"] 

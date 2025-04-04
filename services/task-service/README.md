@@ -1,82 +1,76 @@
 # Task Service
 
-A NestJS-based microservice for managing tasks.
+A lean task management service built with TypeScript, Express, and PostgreSQL.
 
 ## Features
 
 - Create, read, update, and delete tasks
-- Soft delete and restore tasks
-- PostgreSQL database integration
-- RESTful API endpoints
-- TypeORM for database operations
-- Docker support for containerization
+- Mark tasks as complete
+- Filter tasks by status
+- Assign tasks to users
 
-## Prerequisites
+## Requirements
 
-- Node.js 18 or later
-- PostgreSQL 14 or later
+- Node.js 18
+- PostgreSQL 16
 - Docker and Docker Compose (optional)
 
-## Installation
+## Local Development
 
-1. Clone the repository
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    npm install
    ```
 
-## Configuration
+2. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
 
-Create a `.env` file in the root directory with the following variables:
+3. Start the service:
+   ```bash
+   npm run dev
+   ```
 
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_NAME=task_service
-NODE_ENV=development
-PORT=3000
-```
+## Docker Development
 
-## Running the Application
+1. Build and start the services:
+   ```bash
+   docker-compose up -d --build
+   ```
 
-### Development
-
-```bash
-npm run start:dev
-```
-
-### Production
-
-```bash
-npm run build
-npm run start:prod
-```
-
-### Docker
-
-```bash
-docker-compose up --build
-```
+2. Stop the services:
+   ```bash
+   docker-compose down
+   ```
 
 ## API Endpoints
 
-- `POST /tasks` - Create a new task
 - `GET /tasks` - Get all tasks
+- `POST /tasks` - Create a new task
 - `GET /tasks/:id` - Get a task by ID
-- `PUT /tasks/:id` - Update a task
+- `PATCH /tasks/:id` - Update a task
 - `DELETE /tasks/:id` - Delete a task
-- `POST /tasks/:id/restore` - Restore a deleted task
+- `PATCH /tasks/:id/complete` - Mark a task as complete
 
-## Testing
+## Task Status
+
+- `OPEN` - Task is open
+- `IN_PROGRESS` - Task is in progress
+- `DONE` - Task is completed
+
+## Development
 
 ```bash
-npm run test
-npm run test:watch
-npm run test:cov
-```
+# Install dependencies
+npm install
 
-## License
+# Run in development mode
+npm run dev
 
-This project is licensed under the UNLICENSED License. 
+# Build for production
+npm run build
+
+# Start production server
+npm start
+``` 
