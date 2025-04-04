@@ -28,6 +28,10 @@ const swaggerDocument = {
     {
       url: `http://localhost:${port}`,
       description: 'Local development server'
+    },
+    {
+      url: 'http://task-service:3000',
+      description: 'Docker service'
     }
   ],
   paths: {
@@ -109,7 +113,13 @@ const swaggerDocument = {
   }
 };
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Serve Swagger UI and JSON
+app.get('/api-json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerDocument);
+});
+
+app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Rate limiting
 const limiter = rateLimit({

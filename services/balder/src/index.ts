@@ -47,18 +47,162 @@ app.use(express.static(path.join(__dirname, '../public'), {
   index: 'index.html'
 }));
 
-// Serve Swagger UI
-const swaggerOptions = {
-  swaggerOptions: {
-    urls: [
-      {
-        url: `${TASK_SERVICE_URL}/api-docs/swagger.json`,
-        name: 'Task Service'
+// Swagger configuration
+const swaggerDocument = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Balder Service API',
+    version: '1.0.0',
+    description: 'API documentation for the Balder service'
+  },
+  servers: [
+    {
+      url: `http://localhost:${port}`,
+      description: 'Local development server'
+    },
+    {
+      url: 'http://balder:3002',
+      description: 'Docker service'
+    }
+  ],
+  paths: {
+    '/api/tasks': {
+      get: {
+        summary: 'Get all tasks',
+        responses: {
+          '200': {
+            description: 'List of tasks',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'number' },
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      status: { type: 'string', enum: ['OPEN', 'IN_PROGRESS', 'COMPLETED'] },
+                      createdAt: { type: 'string', format: 'date-time' },
+                      updatedAt: { type: 'string', format: 'date-time' }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          '500': {
+            description: 'Server error'
+          }
+        }
+      },
+      post: {
+        summary: 'Create a new task',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  description: { type: 'string' }
+                },
+                required: ['title']
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Task created successfully'
+          },
+          '500': {
+            description: 'Server error'
+          }
+        }
       }
-    ]
+    },
+    '/api/tasks/{id}': {
+      delete: {
+        summary: 'Delete a task',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'number'
+            }
+          }
+        ],
+        responses: {
+          '204': {
+            description: 'Task deleted successfully'
+          },
+          '404': {
+            description: 'Task not found'
+          },
+          '500': {
+            description: 'Server error'
+          }
+        }
+      }
+    },
+    '/health': {
+      get: {
+        summary: 'Health check endpoint',
+        responses: {
+          '200': {
+            description: 'Service health status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string' },
+                    timestamp: { type: 'string', format: 'date-time' },
+                    uptime: { type: 'number' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/version': {
+      get: {
+        summary: 'Get service version',
+        responses: {
+          '200': {
+            description: 'Service version information',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    version: { type: 'string' },
+                    service: { type: 'string' },
+                    environment: { type: 'string' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 };
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(null, swaggerOptions));
+
+// Serve Swagger UI and JSON
+app.get('/api-json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerDocument);
+});
+
+app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // API routes
 app.get('/api/tasks', async (req, res) => {
