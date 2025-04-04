@@ -3,10 +3,10 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 export enum TaskStatus {
   OPEN = 'OPEN',
   IN_PROGRESS = 'IN_PROGRESS',
-  DONE = 'DONE'
+  COMPLETED = 'COMPLETED'
 }
 
-@Entity('tasks')
+@Entity()
 export class Task extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -14,7 +14,7 @@ export class Task extends BaseEntity {
   @Column()
   title!: string;
 
-  @Column({ nullable: true })
+  @Column('text')
   description!: string;
 
   @Column({
@@ -23,9 +23,6 @@ export class Task extends BaseEntity {
     default: TaskStatus.OPEN
   })
   status!: TaskStatus;
-
-  @Column({ nullable: true })
-  assignee!: string;
 
   @CreateDateColumn()
   createdAt!: Date;

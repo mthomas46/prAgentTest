@@ -1,14 +1,41 @@
 import 'reflect-metadata';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { createConnection } from 'typeorm';
+import { createConnection, getRepository } from 'typeorm';
 import { Task, TaskStatus } from './entities/task.entity';
+import rateLimit from 'express-rate-limit';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
+const execAsync = promisify(exec);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+
+app.use(limiter);
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // Limit request body size
+
+// Input validation middleware
+const validateTaskInput = (req: Request, res: Response, next: NextFunction) => {
+  const { title, description } = req.body;
+  
+  if (req.method === 'POST' || req.method === 'PATCH') {
+    if (title && (typeof title !== 'string' || title.length > 100)) {
+      return res.status(400).json({ error: 'Title must be a string and less than 100 characters' });
+    }
+    if (description && (typeof description !== 'string' || description.length > 1000)) {
+      return res.status(400).json({ error: 'Description must be a string and less than 1000 characters' });
+    }
+  }
+  
+  next();
+};
 
 // Database connection
 createConnection({
@@ -29,23 +56,155 @@ createConnection({
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Version endpoint
+app.get('/version', (req: Request, res: Response) => {
+  res.json({ 
+    version: process.env.npm_package_version || '1.0.0',
+    service: 'task-service',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test data endpoint (protected by Brokkr service token)
+app.get('/test-data', (req: Request, res: Response) => {
+  const brokkrToken = req.headers['x-brokkr-token'];
+  
+  if (brokkrToken !== process.env.BROKKR_TOKEN) {
+    return res.status(403).json({ error: 'Unauthorized: Only Brokkr service can access test data' });
+  }
+
+  /**
+   * Returns a JSON-serialized version of test data for the Task entity.
+   * This endpoint is useful for:
+   * - Testing frontend components
+   * - Documentation examples
+   * - Integration testing
+   * - Development and debugging
+   */
+  const testTasks = [
+    {
+      id: 1,
+      title: "Test Task 1",
+      description: "This is a test task in OPEN state",
+      status: "OPEN",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Test Task 2",
+      description: "This is a test task in IN_PROGRESS state",
+      status: "IN_PROGRESS",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "Test Task 3",
+      description: "This is a test task in COMPLETED state",
+      status: "COMPLETED",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 4,
+      title: "Complex Test Task",
+      description: "This is a test task with a longer description that includes special characters and formatting. It demonstrates how the task service handles various types of content.",
+      status: "OPEN",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+
+  res.json(testTasks);
+});
+
+// Test database endpoints (protected by Brokkr service token)
+app.post('/test-db/reset', async (req: Request, res: Response) => {
+  const brokkrToken = req.headers['x-brokkr-token'];
+  
+  if (brokkrToken !== process.env.BROKKR_TOKEN) {
+    return res.status(403).json({ error: 'Unauthorized: Only Brokkr service can reset test database' });
+  }
+
+  try {
+    const taskRepository = getRepository(Task);
+    await taskRepository.clear();
+    res.json({ message: 'Test database reset successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to reset test database' });
+  }
+});
+
+app.post('/test-db/seed', async (req: Request, res: Response) => {
+  const brokkrToken = req.headers['x-brokkr-token'];
+  
+  if (brokkrToken !== process.env.BROKKR_TOKEN) {
+    return res.status(403).json({ error: 'Unauthorized: Only Brokkr service can seed test database' });
+  }
+
+  try {
+    const taskRepository = getRepository(Task);
+    const testTasks = [
+      taskRepository.create({
+        title: "Test Task 1",
+        description: "This is a test task in OPEN state",
+        status: TaskStatus.OPEN
+      }),
+      taskRepository.create({
+        title: "Test Task 2",
+        description: "This is a test task in IN_PROGRESS state",
+        status: TaskStatus.IN_PROGRESS
+      }),
+      taskRepository.create({
+        title: "Test Task 3",
+        description: "This is a test task in COMPLETED state",
+        status: TaskStatus.COMPLETED
+      })
+    ];
+
+    await taskRepository.save(testTasks);
+    res.json({ message: 'Test database seeded successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to seed test database' });
+  }
+});
+
+// Shutdown endpoint (protected by Loki service token)
+app.post('/shutdown', (req: Request, res: Response) => {
+  const lokiToken = req.headers['x-loki-token'];
+  
+  if (lokiToken === process.env.LOKI_SHUTDOWN_TOKEN) {
+    res.json({ message: 'Shutting down service...' });
+    process.exit(0);
+  } else {
+    res.status(403).json({ error: 'Unauthorized: Only Loki service can trigger shutdown' });
+  }
 });
 
 // Routes
 app.get('/tasks', async (req: Request, res: Response) => {
   try {
-    const tasks = await Task.find();
+    const taskRepository = getRepository(Task);
+    const tasks = await taskRepository.find();
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
-app.post('/tasks', async (req: Request, res: Response) => {
+app.post('/tasks', validateTaskInput, async (req: Request, res: Response) => {
   try {
-    const task = Task.create(req.body);
-    const savedTask = await task.save();
+    const taskRepository = getRepository(Task);
+    const task = taskRepository.create(req.body);
+    const savedTask = await taskRepository.save(task);
     res.status(201).json(savedTask);
   } catch (error) {
     res.status(400).json({ error: 'Failed to create task' });
@@ -54,7 +213,8 @@ app.post('/tasks', async (req: Request, res: Response) => {
 
 app.get('/tasks/:id', async (req: Request, res: Response) => {
   try {
-    const task = await Task.findOneBy({ id: parseInt(req.params.id) });
+    const taskRepository = getRepository(Task);
+    const task = await taskRepository.findOneBy({ id: parseInt(req.params.id) });
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
@@ -64,14 +224,15 @@ app.get('/tasks/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.patch('/tasks/:id', async (req: Request, res: Response) => {
+app.patch('/tasks/:id', validateTaskInput, async (req: Request, res: Response) => {
   try {
-    const task = await Task.findOneBy({ id: parseInt(req.params.id) });
+    const taskRepository = getRepository(Task);
+    const task = await taskRepository.findOneBy({ id: parseInt(req.params.id) });
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
     Object.assign(task, req.body);
-    const updatedTask = await task.save();
+    const updatedTask = await taskRepository.save(task);
     res.json(updatedTask);
   } catch (error) {
     res.status(400).json({ error: 'Failed to update task' });
@@ -80,11 +241,12 @@ app.patch('/tasks/:id', async (req: Request, res: Response) => {
 
 app.delete('/tasks/:id', async (req: Request, res: Response) => {
   try {
-    const task = await Task.findOneBy({ id: parseInt(req.params.id) });
+    const taskRepository = getRepository(Task);
+    const task = await taskRepository.findOneBy({ id: parseInt(req.params.id) });
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    await task.remove();
+    await taskRepository.remove(task);
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete task' });
@@ -93,12 +255,13 @@ app.delete('/tasks/:id', async (req: Request, res: Response) => {
 
 app.patch('/tasks/:id/complete', async (req: Request, res: Response) => {
   try {
-    const task = await Task.findOneBy({ id: parseInt(req.params.id) });
+    const taskRepository = getRepository(Task);
+    const task = await taskRepository.findOneBy({ id: parseInt(req.params.id) });
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    task.status = TaskStatus.DONE;
-    const updatedTask = await task.save();
+    task.status = TaskStatus.COMPLETED;
+    const updatedTask = await taskRepository.save(task);
     res.json(updatedTask);
   } catch (error) {
     res.status(400).json({ error: 'Failed to complete task' });
