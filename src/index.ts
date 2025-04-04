@@ -1,3 +1,10 @@
+/**
+ * Task Service Main Application Module
+ * 
+ * This module sets up the Express application, configures middleware,
+ * defines routes, and handles server startup with database initialization.
+ */
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,39 +14,61 @@ import { initDatabase } from './config/database';
 import taskRoutes from './routes/task.routes';
 import logger from './utils/logger';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
+// Initialize Express application
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(helmet()); // Security headers
-app.use(cors()); // Enable CORS
-app.use(express.json()); // Parse JSON bodies
-app.use(morgan('dev')); // HTTP request logging
+/**
+ * Middleware Configuration
+ * 
+ * - helmet: Adds security headers
+ * - cors: Enables Cross-Origin Resource Sharing
+ * - express.json: Parses JSON request bodies
+ * - morgan: Logs HTTP requests in development format
+ */
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+app.use(morgan('dev'));
 
-// Routes
+// Mount task routes under /api/tasks prefix
 app.use('/api/tasks', taskRoutes);
 
-// Health check endpoint
+/**
+ * Health Check Endpoint
+ * 
+ * Used by load balancers and monitoring systems to verify service availability
+ */
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Error handling middleware
+/**
+ * Global Error Handler
+ * 
+ * Catches any unhandled errors in the application
+ * Logs the error and returns a 500 response
+ */
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Unhandled error:', err);
   res.status(500).json({ message: 'Internal server error' });
 });
 
-// Start the server
+/**
+ * Server Startup Function
+ * 
+ * Initializes the database connection and starts the Express server
+ * Exits the process if initialization fails
+ */
 const startServer = async () => {
   try {
-    // Initialize database
+    // Initialize database connection and sync models
     await initDatabase();
     
-    // Start the server
+    // Start the HTTP server
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
     });
@@ -49,4 +78,5 @@ const startServer = async () => {
   }
 };
 
+// Start the application
 startServer(); 

@@ -1,60 +1,73 @@
+# Docker Compose Configuration
+#
+# This file defines the services and their configurations for the task management system,
+# including load balancers, database, logging, and the core task service.
+
 version: '3.8'
 
 services:
+  # External Load Balancer Service
+  # Handles incoming traffic from external clients
   draupnir_external:
     build:
       context: ./services/draupnir_external
       dockerfile: Dockerfile
     ports:
-      - "3003:3003"
+      - "3003:3003"  # Expose port 3003 for external access
     environment:
       - NODE_ENV=development
       - PORT=3003
     volumes:
-      - ./services/draupnir_external/logs:/app/logs
+      - ./services/draupnir_external/logs:/app/logs  # Mount logs directory
     networks:
       - draupnir_network
 
+  # Internal Load Balancer Service
+  # Manages communication between internal services
   draupnir_internal:
     build:
       context: ./services/draupnir_internal
       dockerfile: Dockerfile
     ports:
-      - "3004:3004"
+      - "3004:3004"  # Expose port 3004 for internal access
     environment:
       - NODE_ENV=development
       - PORT=3004
-      - GATEWAY_URL=http://task-service:3000
-      - CORE_SERVICES_URL=http://localhost:3005
+      - GATEWAY_URL=http://task-service:3000  # Task service endpoint
+      - CORE_SERVICES_URL=http://localhost:3005  # Core services endpoint
     volumes:
-      - ./services/draupnir_internal/logs:/app/logs
+      - ./services/draupnir_internal/logs:/app/logs  # Mount logs directory
     networks:
       - draupnir_network
     depends_on:
-      - task-service
+      - task-service  # Wait for task service to be ready
 
+  # PostgreSQL Database Service
+  # Stores task and user data
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine  # Use Alpine-based PostgreSQL for smaller image size
     ports:
-      - "5433:5432"
+      - "5433:5432"  # Map host port 5433 to container port 5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=task_service
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Persist database data
     networks:
       - draupnir_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]  # Check database readiness
       interval: 5s
       timeout: 5s
       retries: 5
 
+  # Loki Logging Service
+  # Collects and stores application logs
   loki:
     image: grafana/loki:2.8.0
     ports:
-      - "3100:3100"
+      - "3100:3100"  # Expose Loki API port
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - draupnir_network
@@ -64,29 +77,33 @@ services:
       timeout: 5s
       retries: 5
 
+  # Core Task Service
+  # Handles task management operations
   task-service:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3000:3000"  # Expose port 3000 for API access
     environment:
       - NODE_ENV=development
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/task_service
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy  # Wait for PostgreSQL to be healthy
     networks:
       - draupnir_network
 
+# Define Docker networks for service communication
 networks:
   draupnir_network:
     driver: bridge
 
+# Define persistent volumes for data storage
 volumes:
-  postgres_data:
-  grafana_data:
-  elasticsearch_data:
-  loki_data:
-  loki_rules:
+  postgres_data:    # PostgreSQL database files
+  grafana_data:     # Grafana configuration and dashboards
+  elasticsearch_data:  # Elasticsearch data
+  loki_data:        # Loki log storage
+  loki_rules:       # Loki alerting rules
