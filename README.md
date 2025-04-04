@@ -123,11 +123,10 @@ A modern, scalable microservices architecture built with NestJS, featuring compr
 
 The system consists of the following microservices:
 
-- **API Gateway**: Main entry point that handles routing and authentication
 - **Task Service**: Manages task-related operations
+- **Balder Service**: Handles UI and task management interface
+- **Heimdal Service**: Provides system-wide health monitoring
 - **Webhook Service**: Handles webhook integrations and callbacks
-- **Document Service**: Manages document processing and storage
-- **Monitoring Service**: Handles system health and metrics
 
 ## Features
 
@@ -141,15 +140,13 @@ The system consists of the following microservices:
 - 🗄️ Data persistence with PostgreSQL
 - 🎯 Health checks and monitoring
 - 🛡️ Rate limiting and security middleware
+- 📚 Swagger/OpenAPI documentation for all services
 
 ## Prerequisites
 
 - Node.js >= 18
 - Docker and Docker Compose
 - PostgreSQL 16
-- RabbitMQ
-- Elasticsearch 8.x
-- Redis (optional)
 
 ## Getting Started
 
@@ -170,56 +167,44 @@ The system consists of the following microservices:
 
 4. Start the services:
    ```bash
-   # Development
-   npm run start:dev
-
-   # Production
-   npm run start:prod
+   # Using Docker Compose
+   docker-compose -f docker-compose.core.yml up -d
    ```
 
-5. Start monitoring stack:
-   ```bash
-   docker-compose -f docker-compose.monitoring.yml up -d
-   ```
+## API Documentation
+
+Each service provides Swagger/OpenAPI documentation for its endpoints. After starting the services, you can access the documentation at:
+
+- Task Service: http://localhost:3000/api
+- Balder Service: http://localhost:3002/api
+- Heimdal Service: http://localhost:3003/api
+- Webhook Service: http://localhost:3004/api
+
+For detailed information about the API documentation, see [Swagger Documentation](docs/SWAGGER.md).
 
 ## Project Structure
 
 ```
 .
 ├── services/
-│   ├── api-gateway/
-│   ├── task-service/
-│   ├── webhook-service/
-│   ├── document-service/
-│   └── monitoring-service/
-├── shared/
-│   ├── config/
-│   ├── middleware/
-│   ├── interceptors/
-│   ├── filters/
-│   ├── guards/
-│   ├── pipes/
-│   └── types/
-├── docker/
-│   ├── development/
-│   └── production/
-└── docs/
-    ├── api/
-    ├── architecture/
-    └── deployment/
+│   ├── task-service/    # Task management service
+│   ├── balder/         # UI and task interface service
+│   ├── heimdal/        # Health monitoring service
+│   └── webhook-service/ # Webhook integration service
+├── docs/
+│   ├── SWAGGER.md      # API documentation
+│   └── ...            # Other documentation
+└── docker/            # Docker configuration
 ```
 
-## API Documentation
+## Documentation
 
-API documentation is available at:
-- Swagger UI: `http://localhost:3002/api`
-- ReDoc: `http://localhost:3002/api-docs`
+Detailed documentation is available in the `docs` directory:
 
-## Monitoring & Observability
-
-- Grafana: `http://localhost:3001`
-- Prometheus: `http://localhost:9090`
-- Kibana: `http://localhost:5601`
+- [Swagger Documentation](docs/SWAGGER.md)
+- [Event System Documentation](docs/EVENT_SYSTEM.md)
+- [API Documentation](docs/API.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
 
 ## Testing
 
@@ -233,6 +218,12 @@ npm run test:e2e
 # Test coverage
 npm run test:cov
 ```
+
+## Monitoring & Observability
+
+- Grafana: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+- Kibana: `http://localhost:5601`
 
 ## Contributing
 
