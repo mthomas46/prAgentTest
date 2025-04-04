@@ -37,13 +37,13 @@ type alias Model =
     }
 
 type alias Service =
-    { name : String
+    { id : String
+    , name : String
     , description : String
-    , url : String
-    , swaggerUrl : String
-    , isAvailable : Bool
-    , hasHealthEndpoint : Bool
-    , version : Maybe String
+    , status : ServiceStatus
+    , metrics : ServiceMetrics
+    , features : List String
+    , dependencies : List String
     }
 
 type alias Tool =
@@ -268,13 +268,56 @@ handleHealthResponse serviceName result =
 
 initialServices : List Service
 initialServices =
-    [ { name = "Task Service"
-      , url = "http://localhost:3000"
-      , swaggerUrl = "http://localhost:3000/swagger-ui.html"
-      , description = "Core service for managing tasks and workflows"
-      , isAvailable = True
-      , hasHealthEndpoint = True
-      , version = Just "1.0.0"
+    [ { id = "task-service"
+      , name = "Task Service"
+      , description = "Manages task creation, updates, and tracking"
+      , status = Running
+      , metrics = 
+          { requests = 150
+          , errors = 2
+          , latency = 120
+          }
+      , features =
+          [ "Task CRUD operations"
+          , "Task status management"
+          , "Task assignment"
+          , "Task history tracking"
+          ]
+      , dependencies = ["postgres", "loki"]
+      }
+    , { id = "valkyrie"
+      , name = "User Management"
+      , description = "Handles user management and access control"
+      , status = Running
+      , metrics =
+          { requests = 85
+          , errors = 0
+          , latency = 90
+          }
+      , features =
+          [ "User CRUD operations"
+          , "Role-based access control"
+          , "User profile management"
+          , "Password management"
+          ]
+      , dependencies = ["postgres", "loki", "sigrun"]
+      }
+    , { id = "sigrun"
+      , name = "Authentication Service"
+      , description = "Manages user authentication and session control"
+      , status = Running
+      , metrics =
+          { requests = 200
+          , errors = 1
+          , latency = 75
+          }
+      , features =
+          [ "User authentication"
+          , "JWT token management"
+          , "Session control"
+          , "Security features"
+          ]
+      , dependencies = ["postgres", "loki"]
       }
     , { name = "Balder Service"
       , url = "http://localhost:3002"
@@ -438,37 +481,17 @@ view model =
 
 viewServiceCard : Service -> Html Msg
 viewServiceCard service =
-    div [ Html.Attributes.class "bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-100 flex flex-col" ]
-        [ div [ Html.Attributes.class "p-6 flex-1 flex flex-col" ]
-            [ div [ Html.Attributes.class "flex items-center justify-between mb-4" ]
-                [ div [ Html.Attributes.class "flex items-center space-x-2" ]
-                    [ h2 [ Html.Attributes.class "text-xl font-semibold text-gray-900" ] [ text service.name ]
-                    , viewStatusIndicator service.isAvailable
-                    ]
-                , case service.version of
-                    Just v ->
-                        span [ Html.Attributes.class "text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded" ]
-                            [ text ("v" ++ v) ]
-                    Nothing ->
-                        text ""
-                ]
-            , p [ Html.Attributes.class "text-gray-600 mb-4 flex-1" ] [ text service.description ]
-            , div [ Html.Attributes.class "flex flex-col space-y-2" ]
-                [ a
-                    [ href service.url
-                    , Html.Attributes.class "inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
-                    ]
-                    [ text "Visit Service" ]
-                , a
-                    [ href service.swaggerUrl
-                    , Html.Attributes.class "inline-flex items-center justify-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition-colors duration-200"
-                    ]
-                    [ text "API Documentation" ]
-                ]
-            , div [ Html.Attributes.class "mt-4 pt-4 border-t border-gray-100" ]
-                [ div [ Html.Attributes.class "mt-2" ] [ viewStatusText service.isAvailable ]
-                ]
+    div [ class "bg-white shadow rounded-lg p-6" ]
+        [ div [ class "flex items-center justify-between" ]
+            [ h3 [ class "text-xl font-semibold text-gray-900" ]
+                [ text service.name ]
+            , viewServiceStatus service.status
             ]
+        , p [ class "mt-2 text-gray-600" ]
+            [ text service.description ]
+        , viewMetrics service.metrics
+        , viewFeatures service.features
+        , viewDependencies service.dependencies
         ]
 
 viewStatusIndicator : Bool -> Html msg

@@ -11,12 +11,6 @@ WORKDIR /app
 # Install build dependencies
 RUN apk add --no-cache curl
 
-# Install Elm
-RUN curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
-RUN gunzip elm.gz
-RUN chmod +x elm
-RUN mv elm /usr/local/bin/
-
 # Copy dependencies
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
@@ -24,8 +18,8 @@ COPY . .
 # Create dist directory
 RUN mkdir -p dist/public
 
-# Build TypeScript and Elm
-RUN npm run build
+# Build TypeScript
+RUN npm run build-ts
 
 # Copy static files
 RUN cp -r public/* dist/public/

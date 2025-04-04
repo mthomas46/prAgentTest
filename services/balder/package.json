@@ -5,17 +5,17 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "tsc && elm make src/Frontpage.elm --output=dist/public/elm.js",
-    "dev": "concurrently \"npm run watch:elm\" \"npm run watch:ts\" \"nodemon dist/index.js\"",
-    "watch:elm": "chokidar \"src/*.elm\" -c \"elm make src/Frontpage.elm --output=dist/public/elm.js --debug\"",
+    "build": "tsc",
+    "dev": "concurrently \"npm run watch:ts\" \"nodemon dist/index.js\"",
+    "watch:elm": "",
     "watch:ts": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@types/node": "^18.15.11",
-    "@types/swagger-ui-express": "^4.1.6",
+    "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
-    "axios": "^1.6.7",
+    "axios": "^1.8.4",
     "concurrently": "^8.0.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",

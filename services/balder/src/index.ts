@@ -13,6 +13,66 @@ const port = process.env.PORT || 3002;
 const TASK_SERVICE_URL = process.env.TASK_SERVICE_URL || 'http://task-service:3000';
 const version = process.env.npm_package_version || '1.0.0';
 
+type ServiceEndpoints = {
+    [key: string]: string;
+};
+
+type ServiceError = {
+    message: string;
+    [key: string]: any;
+};
+
+const serviceEndpoints: ServiceEndpoints = {
+    'task-service': 'http://localhost:3000',
+    'valkyrie': 'http://localhost:3005',
+    'sigrun': 'http://localhost:3006',
+    'draupnir-external': 'http://localhost:3003',
+    'draupnir-internal': 'http://localhost:3004',
+    'postgres': 'http://localhost:5433',
+    'loki': 'http://localhost:3100',
+    'prometheus': 'http://localhost:9090',
+    'grafana': 'http://localhost:3001',
+    'kibana': 'http://localhost:5601',
+    'elasticsearch': 'http://localhost:9200',
+    'logstash': 'http://localhost:9600',
+    'node-exporter': 'http://localhost:9100',
+    'avetta-doc-agent': 'http://localhost:3009'
+};
+
+const healthEndpoints: ServiceEndpoints = {
+    'task-service': '/health',
+    'valkyrie': '/health',
+    'sigrun': '/health',
+    'draupnir-external': '/health',
+    'draupnir-internal': '/health',
+    'postgres': '/health',
+    'loki': '/ready',
+    'prometheus': '/health',
+    'grafana': '/api/health',
+    'kibana': '/api/status',
+    'elasticsearch': '/_cluster/health',
+    'logstash': '/_node/stats',
+    'node-exporter': '/metrics',
+    'avetta-doc-agent': '/health'
+};
+
+const metricsEndpoints: ServiceEndpoints = {
+    'task-service': '/metrics',
+    'valkyrie': '/metrics',
+    'sigrun': '/metrics',
+    'draupnir-external': '/metrics',
+    'draupnir-internal': '/metrics',
+    'postgres': '/metrics',
+    'loki': '/metrics',
+    'prometheus': '/metrics',
+    'grafana': '/metrics',
+    'kibana': '/stats',
+    'elasticsearch': '/_stats',
+    'logstash': '/_node/stats',
+    'node-exporter': '/metrics',
+    'avetta-doc-agent': '/metrics'
+};
+
 app.use(cors({
   origin: function(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     const allowedOrigins = [
@@ -257,6 +317,51 @@ app.post('/shutdown', (req, res) => {
 // Catch-all route for frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/api/services/:serviceId/status', async (req, res) => {
+    const { serviceId } = req.params;
+    const serviceUrl = serviceEndpoints[serviceId];
+    const healthEndpoint = healthEndpoints[serviceId];
+
+    if (!serviceUrl || !healthEndpoint) {
+        return res.status(404).json({ error: 'Service not found' });
+    }
+
+    try {
+        const response = await axios.get(`${serviceUrl}${healthEndpoint}`);
+        res.json({
+            status: 'healthy',
+            data: response.data
+        });
+    } catch (error) {
+        const err = error as ServiceError;
+        res.json({
+            status: 'unhealthy',
+            error: err.message || 'Unknown error occurred'
+        });
+    }
+});
+
+app.get('/api/services/:serviceId/metrics', async (req, res) => {
+    const { serviceId } = req.params;
+    const serviceUrl = serviceEndpoints[serviceId];
+    const metricsEndpoint = metricsEndpoints[serviceId];
+
+    if (!serviceUrl || !metricsEndpoint) {
+        return res.status(404).json({ error: 'Service not found' });
+    }
+
+    try {
+        const response = await axios.get(`${serviceUrl}${metricsEndpoint}`);
+        res.json(response.data);
+    } catch (error) {
+        const err = error as ServiceError;
+        res.status(500).json({
+            error: 'Failed to fetch metrics',
+            details: err.message || 'Unknown error occurred'
+        });
+    }
 });
 
 app.listen(port, () => {
