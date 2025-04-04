@@ -461,6 +461,11 @@ This project includes a comprehensive monitoring stack using Prometheus, Grafana
 - Port: 3001
 - Used for visualizing metrics and logs
 - Pre-configured with Prometheus and Loki data sources
+- Features:
+  - Service health monitoring dashboard
+  - Container status indicators
+  - Detailed service status messages
+  - Standardized API documentation links
 
 ### Loki
 - Configuration: `loki-config.yaml`
@@ -476,6 +481,21 @@ This project includes a comprehensive monitoring stack using Prometheus, Grafana
 ### Node Exporter
 - Port: 9100
 - Collects system metrics for the host machine
+
+## Recent Updates
+
+### Service Health Monitoring
+- Enhanced service status display with detailed status messages
+- Implemented container status fallback for services without health endpoints
+- Added container status indicators in service cards
+- Standardized API documentation links across monitoring tools
+- Updated Swagger UI endpoints to use /swagger-ui.html for Spring Boot services
+
+### Frontend Improvements
+- Enhanced service directory UI
+- Improved service navigation with status indicators
+- Fixed broken links in service directory
+- Better organization of service components
 
 ## Configuration Details
 
