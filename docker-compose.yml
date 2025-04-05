@@ -34,7 +34,7 @@ services:
       - NODE_ENV=development
       - PORT=3004
       - GATEWAY_URL=http://task-service:3000  # Task service endpoint
-      - CORE_SERVICES_URL=http://localhost:3005  # Core services endpoint
+      - CORE_SERVICES_URL=http://bifrost:3000  # Core services endpoint (Bifrost)
     volumes:
       - ./services/draupnir_internal/logs:/app/logs  # Mount logs directory
     networks:
@@ -92,6 +92,53 @@ services:
     depends_on:
       postgres:
         condition: service_healthy  # Wait for PostgreSQL to be healthy
+    networks:
+      - draupnir_network
+
+  balder:
+    build:
+      context: ./services/balder
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+    depends_on:
+      - task-service
+    networks:
+      - draupnir_network
+      
+  # Bifrost Service
+  # Handles message routing and event processing
+  bifrost:
+    build:
+      context: ./services/bifrost
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3000"
+    environment:
+      - PORT=3000
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - draupnir_network
+      
+  # RabbitMQ Message Broker
+  # Handles asynchronous messaging between services
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - draupnir_network
 

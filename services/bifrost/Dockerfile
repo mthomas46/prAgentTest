@@ -3,7 +3,7 @@ FROM node:18-alpine as dependencies
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps --force && \
-    npm install pg --save --force
+    npm install pg class-transformer class-validator --save --force
 
 # Stage 2: Builder
 FROM node:18-alpine as builder
@@ -22,7 +22,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
 
 RUN apk add --no-cache curl && \
-    npm install pg --save && \
+    npm install pg class-transformer class-validator --save && \
     chown -R node:node /app && \
     ls -la dist/ && \
     cat dist/main.js
