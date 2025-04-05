@@ -43,7 +43,26 @@ This project implements a microservices architecture with the following services
   - Service discovery
   - Health checks
 
-### 5. Supporting Services
+### 5. Balder Service
+- **Port**: 3002
+- **Description**: Frontend service built with Elm
+- **Features**:
+  - User interface for task management
+  - Service listing and monitoring
+  - Dashboard for system overview
+  - Responsive design
+
+### 6. Bifrost Service
+- **Port**: 3005 (external), 3000 (internal)
+- **Description**: API Gateway and message routing service
+- **Features**:
+  - Request routing and load balancing
+  - Authentication and authorization
+  - Service discovery
+  - Monitoring and logging
+  - Rate limiting and throttling
+
+### 7. Supporting Services
 - **PostgreSQL Database**:
   - Port: 5433 (external), 5432 (internal)
   - Stores user data, tasks, and authentication information
@@ -53,28 +72,33 @@ This project implements a microservices architecture with the following services
   - Port: 3100
   - Centralized logging solution
   - Log aggregation and search
+  
+- **RabbitMQ Message Broker**:
+  - Ports: 5672 (AMQP), 15672 (Management UI)
+  - Asynchronous messaging between services
+  - Event-driven communication
 
 ## Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Task Service   │     │    Valkyrie     │     │     Sigrun      │
-│    (3000)      │     │    (3005)       │     │    (3006)       │
-└────────┬────────┘     └────────┬────────┘     └────────┬────────┘
-         │                       │                        │
-         │                       │                        │
-┌────────┴───────────────────────┴────────────────────────┴────────┐
-│                      Draupnir Load Balancers                      │
-│              External (3003) / Internal (3004)                    │
-└────────────────────────────────┬───────────────────────────────┬─┘
-                                 │                               │
-                    ┌────────────┴─────────────┐     ┌─────────┴─────────┐
-                    │    PostgreSQL (5433)     │     │   Loki (3100)     │
-                    └────────────────────────┬─┘     └───────────────────┘
-                                           │
-                                ┌─────────┴─────────┐
-                                │  Postgres Volume  │
-                                └───────────────────┘
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Task Service   │     │    Valkyrie     │     │     Sigrun      │     │     Balder      │
+│    (3000)      │     │    (3005)       │     │    (3006)       │     │    (3002)       │
+└────────┬────────┘     └────────┬────────┘     └────────┬────────┘     └────────┬────────┘
+         │                       │                        │                        │
+         │                       │                        │                        │
+┌────────┴───────────────────────┴────────────────────────┴────────────────────────┴────────┐
+│                                Draupnir Load Balancers                                    │
+│                        External (3003) / Internal (3004)                                  │
+└────────────────────────────────┬───────────────────────────────┬─────────────────────────┬─┘
+                                 │                               │                         │
+                    ┌────────────┴─────────────┐     ┌─────────┴─────────┐    ┌──────────┴──────────┐
+                    │    PostgreSQL (5433)     │     │   Loki (3100)     │    │  Bifrost (3005)     │
+                    └────────────────────────┬─┘     └───────────────────┘    └──────────┬──────────┘
+                                           │                                              │
+                                ┌─────────┴─────────┐                        ┌───────────┴───────────┐
+                                │  Postgres Volume  │                        │  RabbitMQ (5672)      │
+                                └───────────────────┘                        └───────────────────────┘
 ```
 
 ## Getting Started
@@ -144,6 +168,24 @@ JWT_SECRET=sigrun-secure-secret-key-123
 LOG_LEVEL=info
 ```
 
+#### Balder Service
+```env
+NODE_ENV=development
+PORT=3002
+```
+
+#### Bifrost Service
+```env
+NODE_ENV=development
+PORT=3000
+RABBITMQ_URL=amqp://rabbitmq:5672
+DB_HOST=postgres
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=postgres
+```
+
 ## API Documentation
 
 ### Task Service Endpoints
@@ -163,6 +205,16 @@ LOG_LEVEL=info
 ### Sigrun Service Endpoints
 - `POST /api/auth/login` - User login
 - `GET /api/auth/verify` - Verify JWT token
+
+### Balder Service
+- `GET /` - Main dashboard
+- `GET /services` - Service list view
+- `GET /tasks` - Task list view
+
+### Bifrost Service Endpoints
+- `GET /health` - Service health check
+- `GET /api` - Swagger API documentation
+- Various routing endpoints for service communication
 
 ## Security
 

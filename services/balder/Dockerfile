@@ -19,7 +19,7 @@ COPY . .
 RUN mkdir -p dist/public
 
 # Build TypeScript
-RUN npm run build-ts
+RUN npm run build
 
 # Copy static files
 RUN cp -r public/* dist/public/
