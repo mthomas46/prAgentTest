@@ -1,0 +1,37 @@
+# <type>: <concise summary in present tense>
+#
+# This commit implements the following changes:
+#
+# 1. <Major Change Category>:
+#    - <Detailed point about the implementation>
+#    - <Additional details with specific changes>
+#    - <More specific details if needed>
+#
+# 2. <Second Change Category>:
+#    - <Detailed implementation point>
+#    - <Specific technical details>
+#    - <Impact or improvement metrics if applicable>
+#
+# 3. <Third Change Category (if applicable)>:
+#    - <Implementation details>
+#    - <Technical specifics>
+#    - <Performance improvements if relevant>
+#
+# 4. <Fourth Change Category (if applicable)>:
+#    - <Implementation details>
+#    - <Technical specifics>
+#
+# 5. <Documentation/Other (if applicable)>:
+#    - <Documentation updates>
+#    - <Usage examples if relevant>
+#
+# These changes <describe overall impact on the system>
+# while maintaining compatibility with <related systems/processes>.
+#
+# Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+# 
+# Examples:
+# feat: Implement parallel build system
+# fix: Resolve JWT token validation in Sigrun service
+# refactor: Optimize Docker build process
+# docs: Update build system documentation
