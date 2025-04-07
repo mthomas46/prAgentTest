@@ -1,0 +1,28 @@
+{
+  "default-ulimits": {
+    "memlock": {
+      "name": "memlock",
+      "soft": -1,
+      "hard": -1
+    }
+  },
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  },
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ],
+  "experimental": true,
+  "features": {
+    "buildkit": true
+  },
+  "builder": {
+    "gc": {
+      "enabled": true,
+      "defaultKeepStorage": "20GB"
+    }
+  }
+} 

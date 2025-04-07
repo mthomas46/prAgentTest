@@ -1,0 +1,76 @@
+version: '3.8'
+
+# This override file is used for optimizing build performance
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.build.yml build
+
+services:
+  # Task Service
+  task-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production  # Use the production stage for smaller images
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true  # Skip tests during build
+    image: task-service:optimized
+
+  # Bifrost Service
+  bifrost:
+    build:
+      context: ./services/bifrost
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: bifrost:optimized
+
+  # Balder Service
+  balder:
+    build:
+      context: ./services/balder
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: balder:optimized
+
+  # Draupnir External
+  draupnir_external:
+    build:
+      context: ./services/draupnir_external
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: draupnir-external:optimized
+
+  # Draupnir Internal
+  draupnir_internal:
+    build:
+      context: ./services/draupnir_internal
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: draupnir-internal:optimized
+
+  # Valkyrie Service
+  valkyrie:
+    build:
+      context: ./services/valkyrie
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: valkyrie:optimized
+
+  # Sigrun Service
+  sigrun:
+    build:
+      context: ./services/sigrun
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - SKIP_TESTS=true
+    image: sigrun:optimized

@@ -1,0 +1,156 @@
+# Docker Compose Configuration
+#
+# This file defines the services and their configurations for the task management system,
+# including load balancers, database, logging, and the core task service.
+
+version: '3.8'
+
+services:
+  # External Load Balancer Service
+  # Handles incoming traffic from external clients
+  draupnir_external:
+    build:
+      context: ./services/draupnir_external
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"  # Expose port 3003 for external access
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+    volumes:
+      - ./services/draupnir_external/logs:/app/logs  # Mount logs directory
+    networks:
+      - draupnir_network
+
+  # Internal Load Balancer Service
+  # Manages communication between internal services
+  draupnir_internal:
+    build:
+      context: ./services/draupnir_internal
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"  # Expose port 3004 for internal access
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - GATEWAY_URL=http://task-service:3000  # Task service endpoint
+      - CORE_SERVICES_URL=http://bifrost:3000  # Core services endpoint (Bifrost)
+    volumes:
+      - ./services/draupnir_internal/logs:/app/logs  # Mount logs directory
+    networks:
+      - draupnir_network
+    depends_on:
+      - task-service  # Wait for task service to be ready
+
+  # PostgreSQL Database Service
+  # Stores task and user data
+  postgres:
+    image: postgres:16-alpine  # Use Alpine-based PostgreSQL for smaller image size
+    ports:
+      - "5433:5432"  # Map host port 5433 to container port 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=task_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist database data
+    networks:
+      - draupnir_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]  # Check database readiness
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Loki Logging Service
+  # Collects and stores application logs
+  loki:
+    image: grafana/loki:2.8.0
+    ports:
+      - "3100:3100"  # Expose Loki API port
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - draupnir_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --tries=1 -O- http://localhost:3100/ready || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Core Task Service
+  # Handles task management operations
+  task-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Expose port 3000 for API access
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/task_service
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait for PostgreSQL to be healthy
+    networks:
+      - draupnir_network
+
+  balder:
+    build:
+      context: ./services/balder
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+    depends_on:
+      - task-service
+    networks:
+      - draupnir_network
+      
+  # Bifrost Service
+  # Handles message routing and event processing
+  bifrost:
+    build:
+      context: ./services/bifrost
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3000"
+    environment:
+      - PORT=3000
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=postgres
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - draupnir_network
+      
+  # RabbitMQ Message Broker
+  # Handles asynchronous messaging between services
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - draupnir_network
+
+# Define Docker networks for service communication
+networks:
+  draupnir_network:
+    driver: bridge
+
+# Define persistent volumes for data storage
+volumes:
+  postgres_data:    # PostgreSQL database files
+  grafana_data:     # Grafana configuration and dashboards
+  elasticsearch_data:  # Elasticsearch data
+  loki_data:        # Loki log storage
+  loki_rules:       # Loki alerting rules

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balder Service - Service Discovery and API Gateway</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <script src="elm.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const app = Elm.Main.init({
+            node: document.getElementById('app'),
+            flags: {
+                version: "1.0.0",
+                environment: "development"
+            }
+        });
+        
+        // Port handling can be added here for JavaScript interop
+        
+        // Example of receiving data from Elm
+        // app.ports.outgoingPort.subscribe(data => {
+        //     // Handle data from Elm
+        // });
+        
+        // Example of sending data to Elm
+        // function sendToElm(data) {
+        //     app.ports.incomingPort.send(data);
+        // }
+    </script>
+</body>
+</html>

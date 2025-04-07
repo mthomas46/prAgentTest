@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  draupnir_external:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - BIFROST_URL=http://localhost:3001
+      - HEIMDAL_URL=http://localhost:3002
+      - LOG_LEVEL=info
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - draupnir-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  draupnir_internal:
+    build: 
+      context: ../draupnir_internal
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - GATEWAY_URL=http://localhost:3000
+      - CORE_SERVICES_URL=http://localhost:3005
+      - LOG_LEVEL=info
+    volumes:
+      - ../draupnir_internal/logs:/app/logs
+    networks:
+      - draupnir-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  draupnir-network:
+    driver: bridge 

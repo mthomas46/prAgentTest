@@ -1,0 +1,37 @@
+{
+  // TypeScript compiler options
+  "compilerOptions": {
+    // Target ECMAScript version
+    "target": "ES2022",
+    
+    // Module system to use
+    "module": "commonjs",
+    
+    // Output directory for compiled files
+    "outDir": "./dist",
+    
+    // Root directory for source files
+    "rootDir": "./src",
+    
+    // Enable strict type checking
+    "strict": true,
+    
+    // Enable ES module interop
+    "esModuleInterop": true,
+    
+    // Skip type checking of declaration files
+    "skipLibCheck": true,
+    
+    // Ensure consistent casing in file names
+    "forceConsistentCasingInFileNames": true,
+    
+    // Allow importing JSON files
+    "resolveJsonModule": true
+  },
+  
+  // Files to include in compilation
+  "include": ["src/**/*"],
+  
+  // Files to exclude from compilation
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
