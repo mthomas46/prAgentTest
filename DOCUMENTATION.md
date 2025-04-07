@@ -134,6 +134,74 @@ The optimized build system shows significant performance improvements:
 - Full system builds are approximately 50-70% faster than before
 - Production builds result in smaller, more efficient container images
 
+## Development Workflow
+
+### Git Commit Template
+
+The project includes a standardized commit message template to ensure consistent and informative commit messages across the team.
+
+#### Template Structure
+
+The `.gitmessage` template follows this format:
+
+```
+# <type>: <concise summary in present tense>
+#
+# This commit implements the following changes:
+#
+# 1. <Major Change Category>:
+#    - <Detailed point about the implementation>
+#    - <Additional details with specific changes>
+#
+# 2. <Second Change Category>:
+#    - <Detailed implementation point>
+#    - <Specific technical details>
+#
+# ... additional categories as needed
+```
+
+#### Commit Types
+
+Commit messages should start with one of these types:
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, missing semicolons, etc.)
+- **refactor**: Code changes that neither fix bugs nor add features
+- **perf**: Performance improvements
+- **test**: Adding or improving tests
+- **build**: Changes to build system or dependencies
+- **ci**: Changes to CI configuration
+- **chore**: Other changes that don't modify source or test files
+
+#### How to Use
+
+1. The template is automatically loaded when you run `git commit` without the `-m` flag
+2. Replace the placeholders with your actual changes
+3. Keep the sections that are relevant and delete those that don't apply
+4. Save and close to complete your commit
+
+#### Example
+
+```
+feat: Implement parallel build system
+
+This commit implements the following changes:
+
+1. Build System Optimization:
+   - Created build-parallel.sh script for concurrent builds
+   - Implemented progress tracking and logging
+   - Added support for selective service building
+
+2. Docker Compose Integration:
+   - Updated docker-compose files to support parallel builds
+   - Added build arguments for optimization
+
+These changes improve build performance by 50-70%
+while maintaining compatibility with existing deployment processes.
+```
+
 ## How to Run
 
 ### Using the Optimized Build System
