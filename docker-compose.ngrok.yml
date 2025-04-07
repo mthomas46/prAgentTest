@@ -6,7 +6,7 @@ services:
     ports:
       - "4040:4040"  # ngrok web interface
     environment:
-      - NGROK_AUTHTOKEN=2v8mL2pR0ME0h96os13RtWbJFSL_7Zw7tN6LHTrZGdms7MUB3
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     volumes:
       - ./tools/ngrok/ngrok.yml:/etc/ngrok/ngrok.yml
     command: start avetta-doc-agent --config /etc/ngrok/ngrok.yml

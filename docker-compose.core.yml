@@ -13,9 +13,9 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=taskdb
-      - BROKKR_TOKEN=brokkr-secure-token-123
+      - BROKKR_TOKEN=${BROKKR_TOKEN}
     depends_on:
       postgres:
         condition: service_healthy
@@ -46,9 +46,9 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_DATABASE=valhalla
-      - JWT_SECRET=your-secret-key
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -79,9 +79,9 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_DATABASE=valhalla
-      - JWT_SECRET=your-secret-key
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -112,7 +112,7 @@ services:
       - TASK_SERVICE_URL=http://task-service:3000
       - VALKYRIE_URL=http://valkyrie:3005
       - SIGRUN_URL=http://sigrun:3006
-      - BROKKR_TOKEN=brokkr-secure-token-123
+      - BROKKR_TOKEN=${BROKKR_TOKEN}
     depends_on:
       task-service:
         condition: service_healthy
@@ -146,7 +146,7 @@ services:
       - PORT=3003
       - TASK_SERVICE_URL=http://task-service:3000
       - BALDER_URL=http://balder:3002
-      - BROKKR_TOKEN=brokkr-secure-token-123
+      - BROKKR_TOKEN=${BROKKR_TOKEN}
     depends_on:
       - task-service
       - balder
@@ -177,11 +177,11 @@ services:
       - TASK_SERVICE_URL=http://task-service:3000
       - BALDER_URL=http://balder:3002
       - HEIMDAL_URL=http://heimdal:3003
-      - BROKKR_TOKEN=brokkr-secure-token-123
+      - BROKKR_TOKEN=${BROKKR_TOKEN}
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_DATABASE=webhook
     depends_on:
       - task-service
@@ -208,7 +208,7 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=taskdb
       - POSTGRES_MULTIPLE_DATABASES=valhalla
     volumes:
