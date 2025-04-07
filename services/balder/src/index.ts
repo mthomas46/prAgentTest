@@ -6,6 +6,7 @@ import axios from 'axios';
 import cors from 'cors';
 import { promisify } from 'util';
 import YAML from 'yamljs';
+import fetch, { Response } from 'node-fetch';
 
 const execAsync = promisify(exec);
 const app = express();
@@ -103,6 +104,52 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Service Status API endpoints
+app.get('/api/services/:serviceId/status', async (req, res) => {
+    const { serviceId } = req.params;
+    const serviceUrl = serviceEndpoints[serviceId];
+    const healthEndpoint = healthEndpoints[serviceId];
+
+    if (!serviceUrl || !healthEndpoint) {
+        return res.status(404).json({ error: 'Service not found' });
+    }
+
+    try {
+        const response = await axios.get(`${serviceUrl}${healthEndpoint}`);
+        res.json({
+            status: 'healthy',
+            data: response.data
+        });
+    } catch (error) {
+        const err = error as ServiceError;
+        res.json({
+            status: 'unhealthy',
+            error: err.message || 'Unknown error occurred'
+        });
+    }
+});
+
+app.get('/api/services/:serviceId/metrics', async (req, res) => {
+    const { serviceId } = req.params;
+    const serviceUrl = serviceEndpoints[serviceId];
+    const metricsEndpoint = metricsEndpoints[serviceId];
+
+    if (!serviceUrl || !metricsEndpoint) {
+        return res.status(404).json({ error: 'Service not found' });
+    }
+
+    try {
+        const response = await axios.get(`${serviceUrl}${metricsEndpoint}`);
+        res.json(response.data);
+    } catch (error) {
+        const err = error as ServiceError;
+        res.status(500).json({
+            error: 'Failed to fetch metrics',
+            details: err.message || 'Unknown error occurred'
+        });
+    }
+});
+
 // Load Swagger document
 const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'));
 
@@ -148,7 +195,7 @@ app.post('/api/tasks', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(req.body)
-    });
+    }) as Response;
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -314,54 +361,9 @@ app.post('/shutdown', (req, res) => {
   }
 });
 
-// Catch-all route for frontend
+// Catch-all route for frontend - must be after all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
-});
-
-app.get('/api/services/:serviceId/status', async (req, res) => {
-    const { serviceId } = req.params;
-    const serviceUrl = serviceEndpoints[serviceId];
-    const healthEndpoint = healthEndpoints[serviceId];
-
-    if (!serviceUrl || !healthEndpoint) {
-        return res.status(404).json({ error: 'Service not found' });
-    }
-
-    try {
-        const response = await axios.get(`${serviceUrl}${healthEndpoint}`);
-        res.json({
-            status: 'healthy',
-            data: response.data
-        });
-    } catch (error) {
-        const err = error as ServiceError;
-        res.json({
-            status: 'unhealthy',
-            error: err.message || 'Unknown error occurred'
-        });
-    }
-});
-
-app.get('/api/services/:serviceId/metrics', async (req, res) => {
-    const { serviceId } = req.params;
-    const serviceUrl = serviceEndpoints[serviceId];
-    const metricsEndpoint = metricsEndpoints[serviceId];
-
-    if (!serviceUrl || !metricsEndpoint) {
-        return res.status(404).json({ error: 'Service not found' });
-    }
-
-    try {
-        const response = await axios.get(`${serviceUrl}${metricsEndpoint}`);
-        res.json(response.data);
-    } catch (error) {
-        const err = error as ServiceError;
-        res.status(500).json({
-            error: 'Failed to fetch metrics',
-            details: err.message || 'Unknown error occurred'
-        });
-    }
 });
 
 app.listen(port, () => {

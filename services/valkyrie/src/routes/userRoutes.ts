@@ -4,26 +4,23 @@ import {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser,
+  deleteUser
 } from '../controllers/userController';
-import { authenticateToken } from '../middleware/auth';
+import { verifyToken } from '../middleware/auth';
 
 const router = express.Router();
 
 // Public routes
 router.post('/register', createUser);
-router.post('/login', loginUser);
 
-// Protected routes
-router.get('/:userid', authenticateToken, getUser);
-router.put('/:userid', authenticateToken, updateUser);
-router.delete('/:userid', authenticateToken, deleteUser);
+// Protected routes - all routes below this point require authentication
+router.use(verifyToken);
 
 // User management routes
 router.post('/', createUser);
 router.get('/', getAllUsers);
-router.get('/:id', getUserById);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.get('/:userId', getUserById);
+router.put('/:userId', updateUser);
+router.delete('/:userId', deleteUser);
 
 export default router; 

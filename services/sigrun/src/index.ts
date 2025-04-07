@@ -19,7 +19,25 @@ app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    service: 'sigrun',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Version endpoint
+app.get('/version', (req, res) => {
+  res.json({ 
+    version: process.env.npm_package_version || '1.0.0',
+    service: 'sigrun',
+    environment: process.env.NODE_ENV || 'development',
+    nodeVersion: process.version,
+    platform: process.platform
+  });
 });
 
 // Initialize database and start server
